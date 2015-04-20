@@ -6,6 +6,9 @@ groups:
 - name: dev2
   jobs:
   - job-deploy-dev2
+- name: release
+  jobs:
+  - job-deploy-integration
 
 jobs:
 - name: job-deploy-dev1
@@ -74,6 +77,39 @@ jobs:
       stemcells:
         - resource-bosh-stemcell/*.tgz
 
+- name: job-deploy-integration
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - get: resource-bosh-stemcell
+      trigger: false
+    - get: resource-bosh-release-redis
+      trigger: false
+    - get: pipeline
+      resource: resource-pipeline
+      trigger: false
+    - get: resource-pipeline-integration
+
+  # make ./dev2/manifest.yml from templates
+  - task: make-manifest
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - name: pipeline
+        path: .
+      run:
+        path: ./integration/make_manifest_and_save.sh
+
+  - put: resource-bosh-deployment-integration
+    params:
+      manifest: make-manifest/integration/manifest.yml
+      releases:
+        - resource-bosh-release-redis/*.tgz
+      stemcells:
+        - resource-bosh-stemcell/*.tgz
+
 resources:
 - name: resource-bosh-stemcell
   type: bosh-io-stemcell
@@ -109,6 +145,14 @@ resources:
     private_key: {{github-private-key}}
     paths: [dev2/pipeline, dev2/templates]
 
+- name: resource-pipeline-integration
+  type: git
+  source:
+    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    branch: master
+    private_key: {{github-private-key}}
+    paths: [integration/pipeline, integration/templates]
+
 - name: resource-bosh-deployment-dev1
   type: bosh-deployment
   source:
@@ -125,4 +169,13 @@ resources:
     username: {{bosh-username}}
     password: {{bosh-password}}
     deployment: dev2
+    ignore_ssl: true
+
+- name: resource-bosh-deployment-integration
+  type: bosh-deployment
+  source:
+    target: {{bosh-target}}
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    deployment: integration
     ignore_ssl: true
