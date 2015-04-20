@@ -3,6 +3,7 @@ groups:
 - name: release
   jobs:
   - job-deploy-integration
+  - job-deploy-staging
 
 jobs:
 - name: job-deploy-integration
@@ -56,6 +57,24 @@ jobs:
     params:
       from: save-deployment-pipeline/pipeline-assets-(.*).tgz
 
+- name: job-deploy-staging
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - get: candidate
+      resource: s3-pipeline-release-candidate
+      passed: [job-deploy-integration]
+    - get: resource-pipeline-staging
+    - get: pipeline
+      resource: resource-pipeline
+      trigger: false
+      passed: [job-deploy-integration]
+    - get: release-version
+      resource: resource-release-version
+      passed: [job-deploy-integration]
+      trigger: false
+
 resources:
 - name: resource-bosh-stemcell
   type: bosh-io-stemcell
@@ -81,6 +100,15 @@ resources:
     branch: master
     private_key: {{github-private-key}}
     paths: [integration/pipeline, integration/templates]
+
+# resource-pipeline-staging should only trigger on pipeline-specific changes
+- name: resource-pipeline-staging
+  type: git
+  source:
+    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    branch: master
+    private_key: {{github-private-key}}
+    paths: [integration/pipeline]
 
 - name: resource-bosh-deployment-integration
   type: bosh-deployment
