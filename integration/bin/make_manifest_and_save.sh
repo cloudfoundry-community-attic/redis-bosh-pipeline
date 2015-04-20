@@ -5,5 +5,5 @@ manifest=${manifest:-"manifest.yml"}
 
 set -e
 
-cd $DIR
-./make_manifest.sh $@ > $manifest
+cd $DIR/..
+./bin/make_manifest.sh $@ > $manifest

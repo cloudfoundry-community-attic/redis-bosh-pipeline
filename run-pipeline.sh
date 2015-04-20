@@ -28,7 +28,7 @@ if [[ ! -f ${stub} ]]; then
 fi
 
 pushd $DIR
-  yes y | fly configure -c pipeline.yml --vars-from ${stub}
+  yes y | fly configure -c ${pipeline} --vars-from ${stub}
   if [[ "${trigger_job}X" != "X" ]]; then
     curl $ATC_URL/jobs/${trigger_job}/builds -X POST
     fly watch -j ${trigger_job}
