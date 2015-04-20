@@ -9,13 +9,23 @@ jobs:
       trigger: false
     - get: resource-bosh-release-redis
       trigger: false
-    - get: resource-pipeline-dev1
-      trigger: true
     - get: pipeline
       resource: resource-pipeline
       trigger: false
+    - get: resource-pipeline-dev1
 
-  - task: spiff-merge
+  # - task: ls
+  #   config:
+  #     platform: linux
+  #     image: docker:///ubuntu#14.04
+  #     inputs:
+  #     - name: pipeline
+  #     run:
+  #       path: ls
+  #       args: ["-opR", "pipeline"]
+
+  # make ./dev1/manifest.yml from templates
+  - task: make-manifest
     config:
       platform: linux
       image: {{docker-hub-task-image}}
@@ -23,7 +33,7 @@ jobs:
       - name: pipeline
         path: .
       run:
-        path: ./dev1/make_manifest.sh
+        path: ./dev1/make_manifest_and_save.sh
 
   # - task: git-add
   #   config:
@@ -39,13 +49,13 @@ jobs:
   #   params:
   #     repository: git-add/spiff-merge/stub
   #
-  # - put: resource-bosh-deployment
-  #   params:
-  #     manifest: spiff-merge/stub/manifest.yml
-  #     releases:
-  #       - resource-bosh-release-redis/*.tgz
-  #     stemcells:
-  #       - resource-bosh-stemcell/*.tgz
+  - put: resource-bosh-deployment-dev1
+    params:
+      manifest: make-manifest/dev1/manifest.yml
+      releases:
+        - resource-bosh-release-redis/*.tgz
+      stemcells:
+        - resource-bosh-stemcell/*.tgz
 
 resources:
 - name: resource-bosh-stemcell
