@@ -1,5 +1,6 @@
 #!/bin/bash
 
+pipeline=$1; shift
 stub=$1; shift
 trigger_job=$1; shift
 set -e
@@ -14,7 +15,7 @@ realpath() {
 }
 
 usage() {
-  echo "USAGE: run-pipeline.sh credentials.yml"
+  echo "USAGE: run-pipeline.sh pipeline.yml credentials.yml [trigger-job]"
   exit 1
 }
 
