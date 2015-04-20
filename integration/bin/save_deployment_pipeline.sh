@@ -6,9 +6,11 @@ if [[ ! -f release-version/number ]]; then
 fi
 release_version=$(cat release-version/number)
 
-mkdir -p pipeline-assets
-cp resource-bosh-release-redis/*.tgz pipeline-assets/
-cp resource-bosh-stemcell/*.tgz pipeline-assets/
+mkdir -p pipeline-assets/releases/redis
+cp resource-bosh-release-redis/* pipeline-assets/releases/redis/
+
+mkdir -p pipeline-assets/stemcell
+cp resource-bosh-stemcell/* pipeline-assets/stemcell/
 
 pipeline=$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )
 cp -r $pipeline/templates pipeline-assets/
