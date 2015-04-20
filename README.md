@@ -14,3 +14,24 @@ No changes are directly made to `production`. Rather, changes are first tested i
 Similarly, `staging` is only for changes that have been dev/tested in either `dev1` or `dev2` first. It should also only be for staging candidates for `production`. As a corollary, only final releases of BOSH releases are to be considered by `staging`.
 
 Therefore, final releases are to be developed and cut based on work in `dev1` and/or `dev2`.
+
+After `production` is ever upgraded/resized/reconfigred it will be using the same deployment manifest as `staging`, with the expection of only the very minor differences - such as networking, public URLs, etc.
+
+`staging` is only different from `production` when it is being changed into a test candidate for `production`.
+
+The changes to be applied to `production` must be the same as those applied to `staging` for its candidate. As such, `staging` must be reset back to look like `production` prior to each candidate deployment.
+
+Manifest templates
+------------------
+
+To create the BOSH deployment manifests for each deployment (`dev1`, `dev2`, `staging` and `production`), this project will use spiff templates.
+
+-	some from the upstream https://github.com/cloudfoundry-community/redis-boshrelease repository
+-	some that are dedicated to each deployment (networking, public hostnames, etc)
+-	some that are in response to the runtime environment (scaling)
+
+This project, including running Concourse pipeline, will control the set of templates used to construct deployment manifests. They will be composed together as a `tgz` tarball and stored in S3. These templates tarball are the candidates for deployment.
+
+A deployment to `production` is only possible for templates tarballs that deployed successfully into `staging` (and passed any integration tests), and include final releases.
+
+A deployment to `staging` is only possible for templates tarballs that deployed successfully into either `dev1` or `dev2`, and include final releases.
