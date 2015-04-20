@@ -25,7 +25,6 @@ jobs:
     resource: resource-release-version
     params: {file: release-version/number}
 
-  # make ./dev2/manifest.yml from templates
   - task: make-manifest
     config:
       platform: linux
@@ -62,7 +61,7 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: candidate
+    - get: candidate-assets
       resource: s3-pipeline-release-candidate
       passed: [job-deploy-integration]
     - get: resource-pipeline-staging
@@ -74,6 +73,23 @@ jobs:
       resource: resource-release-version
       passed: [job-deploy-integration]
       trigger: false
+  - task: unpack-assets
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: pipeline}
+      - {name: candidate-assets}
+      run:
+        path: ./integration/bin/unpack_assets.sh
+        args: [candidate-assets]
+  # - task: make-manifest
+  #   config:
+  #     platform: linux
+  #     image: {{docker-hub-task-image}}
+  #     inputs:
+  #     - {name: pipeline, path: .}
+  #     run: {path: ./integration/bin/make_manifest_and_save.sh}
 
 resources:
 - name: resource-bosh-stemcell
