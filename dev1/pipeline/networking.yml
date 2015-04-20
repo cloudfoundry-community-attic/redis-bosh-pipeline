@@ -33,3 +33,21 @@ meta:
         reserved:
         - 10.244.12.17
         static: []
+      - cloud_properties:
+          name: random
+        range: 10.244.12.20/30
+        reserved:
+        - 10.244.12.21
+        static: []
+      - cloud_properties:
+          name: random
+        range: 10.244.12.24/30
+        reserved:
+        - 10.244.12.25
+        static: []
+      - cloud_properties:
+          name: random
+        range: 10.244.12.28/30
+        reserved:
+        - 10.244.12.29
+        static: []
