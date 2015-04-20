@@ -1,6 +1,7 @@
 #!/bin/bash
 
 stub=$1; shift
+trigger_job=$1; shift
 set -e
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
@@ -27,6 +28,8 @@ fi
 
 pushd $DIR
   yes y | fly configure -c pipeline.yml --vars-from ${stub}
-  curl $ATC_URL/jobs/job-deploy/builds -X POST
-  fly watch -j job-deploy
+  if [[ "${trigger_job}X" != "X" ]]; then
+    curl $ATC_URL/jobs/${trigger_job}/builds -X POST
+    fly watch -j ${trigger_job}
+  fi
 popd
