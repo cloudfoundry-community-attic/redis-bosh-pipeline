@@ -52,6 +52,10 @@ jobs:
       - {name: resource-bosh-stemcell}
       run: {path: ./integration/bin/save_deployment_pipeline.sh}
 
+  - put: s3-pipeline-release-candidate
+    params:
+      from: save-deployment-pipeline/pipeline-assets-(.*).tgz
+
 resources:
 - name: resource-bosh-stemcell
   type: bosh-io-stemcell
@@ -96,3 +100,13 @@ resources:
     access_key_id: {{aws-access-key-id}}
     secret_access_key: {{aws-secret-access-key}}
     region_name: us-east-1
+
+- name: s3-pipeline-release-candidate
+  type: s3
+  source:
+    access_key_id: {{aws-access-key-id}}
+    secret_access_key: {{aws-secret-access-key}}
+    region_name: {{aws-region-name}}
+    bucket:  {{aws-pipeline-bucket}}
+    private: true
+    regexp: pipeline-assets-(.*).tgz
