@@ -7,9 +7,10 @@ spiff merge \
   templates/redis/deployment.yml \
   templates/redis/jobs.yml \
   templates/infrastructure-warden.yml \
-  pipeline/workload.yml \
+  templates/workload.yml \
+  templates/stemcell.yml \
   pipeline/networking.yml \
-  pipeline/scaling.yml \
   pipeline/properties.yml \
   pipeline/director.yml \
-  pipeline/name.yml
+  pipeline/name.yml \
+  pipeline/scaling.yml
