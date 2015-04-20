@@ -10,10 +10,8 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: resource-bosh-stemcell
-      trigger: false
-    - get: resource-bosh-release-redis
-      trigger: false
+    - {get: resource-bosh-stemcell, trigger: false}
+    - {get: resource-bosh-release-redis, trigger: false}
     - get: pipeline
       resource: resource-pipeline
       trigger: false
@@ -21,12 +19,10 @@ jobs:
     - get: release-version
       trigger: false
       resource: resource-release-version
-      params:
-        bump: patch
+      params: {bump: patch}
   - put: release-version
     resource: resource-release-version
-    params:
-      file: release-version/number
+    params: {file: release-version/number}
 
   # make ./dev2/manifest.yml from templates
   - task: make-manifest
@@ -34,10 +30,8 @@ jobs:
       platform: linux
       image: {{docker-hub-task-image}}
       inputs:
-      - name: pipeline
-        path: .
-      run:
-        path: ./integration/make_manifest_and_save.sh
+      - {name: pipeline, path: .}
+      run: {path: ./integration/make_manifest_and_save.sh}
 
   - put: resource-bosh-deployment-integration
     params:
@@ -46,6 +40,8 @@ jobs:
         - resource-bosh-release-redis/*.tgz
       stemcells:
         - resource-bosh-stemcell/*.tgz
+
+  - task: package-assets
 
 resources:
 - name: resource-bosh-stemcell
@@ -56,8 +52,7 @@ resources:
 
 - name: resource-bosh-release-redis
   type: bosh-io-release
-  source:
-    repository: cloudfoundry-community/redis-boshrelease
+  source: {repository: cloudfoundry-community/redis-boshrelease}
 
 - name: resource-pipeline
   type: git
