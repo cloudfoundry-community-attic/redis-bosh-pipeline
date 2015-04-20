@@ -1,0 +1,27 @@
+---
+jobs:
+- name: job-build-task-image
+  public: true
+  serial: true
+  plan:
+  - get: pipeline
+    resource: resource-pipeline
+  - put: docker-image
+    params:
+      build: pipeline/task_docker_image
+
+resources:
+- name: resource-pipeline
+  type: git
+  source:
+    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    branch: master
+    private_key: {{github-private-key}}
+
+- name: docker-image
+  type: docker-image
+  source:
+    email: {{docker-hub-email}}
+    username: {{docker-hub-username}}
+    password: {{docker-hub-password}}
+    repository: {{docker-hub-task-image}}

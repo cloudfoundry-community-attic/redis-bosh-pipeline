@@ -1,0 +1,91 @@
+---
+jobs:
+- name: job-deploy
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - get: resource-bosh-stemcell
+    - get: resource-bosh-release-redis
+    - get: redis-release
+      resource: resource-redis-release-templates
+      params:
+        submodules: none
+    - get: resource-deployment-manifest-stub-in
+    - get: stub
+      resource: resource-deployment-manifest-stub-save
+      trigger: false
+
+  - task: spiff-merge
+    config:
+      platform: linux
+      image: {{docker-hub-image-47-tasks-uri}}
+      inputs:
+      - name: stub
+      - name: redis-release
+      run:
+        path: spiff-merge-and-save
+        args:
+          - stub/manifest.yml
+          - redis-release/templates/deployment.yml
+          - redis-release/templates/jobs.yml
+          - redis-release/templates/infrastructure-warden.yml
+          - stub/stub.yml
+
+  - task: git-add
+    config:
+      platform: linux
+      image: {{docker-hub-image-47-tasks-uri}}
+      inputs:
+      - name: spiff-merge
+      run:
+        path: git-add-all
+        args: [spiff-merge/stub]
+
+  - put: resource-deployment-manifest-stub-save
+    params:
+      repository: git-add/spiff-merge/stub
+
+  - put: resource-bosh-deployment
+    params:
+      manifest: spiff-merge/stub/manifest.yml
+      releases:
+        - resource-bosh-release-redis/*.tgz
+      stemcells:
+        - resource-bosh-stemcell/*.tgz
+
+resources:
+- name: resource-bosh-stemcell
+  type: bosh-io-stemcell
+  source:
+    name: {{bosh-stemcell-name}}
+    version: {{bosh-stemcell-version}}
+
+- name: resource-bosh-release-redis
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/redis-boshrelease
+
+- name: resource-pipeline
+  type: git
+  source:
+    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    branch: master
+    private_key: {{github-private-key}}
+
+- name: resource-pipeline-dev1
+  type: git
+  source:
+    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    branch: master
+    private_key: {{github-private-key}}
+    paths: [dev1/pipeline, dev1/templates]
+
+- name: resource-bosh-deployment-dev1
+  type: bosh-deployment
+  source:
+    target: {{bosh-target}}
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    deployment: dev1
+    ignore_ssl: true
