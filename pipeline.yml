@@ -90,6 +90,15 @@ jobs:
       resource: resource-pipeline
       trigger: false
     - get: resource-pipeline-integration
+    - get: release-version
+      trigger: false
+      resource: resource-release-version
+      params:
+        bump: patch
+  - put: release-version
+    resource: resource-release-version
+    params:
+      file: release-version/number
 
   # make ./dev2/manifest.yml from templates
   - task: make-manifest
@@ -179,3 +188,13 @@ resources:
     password: {{bosh-password}}
     deployment: integration
     ignore_ssl: true
+
+- name: resource-release-version
+  type: semver
+  source:
+    bucket: {{aws-pipeline-bucket}}
+    key: release-version
+    initial_version: 0.1.0
+    access_key_id: {{aws-access-key-id}}
+    secret_access_key: {{aws-secret-access-key}}
+    region_name: us-east-1
