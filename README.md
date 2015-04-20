@@ -35,3 +35,21 @@ This project, including running Concourse pipeline, will control the set of temp
 A deployment to `production` is only possible for templates tarballs that deployed successfully into `staging` (and passed any integration tests), and include final releases.
 
 A deployment to `staging` is only possible for templates tarballs that deployed successfully into either `dev1` or `dev2`, and include final releases.
+
+### dev1
+
+The `dev` deployments are for humans to experiment with future change proposals to production.
+
+They might use dev and/or final releases. They might use spiff templates from branches. They might be upgraded or destroyed/recreated.
+
+For this Redis deployment there will be the following templates:
+
+-	`deployment.yml` - from redis-boshrelease
+-	`jobs.yml` - from redis-boshrelease
+-	`infrastructure-warden.yml` - from redis-boshrelease
+-	`networking-dev1.yml` - from `dev1/pipeline` folder
+-	`scaling-dev1.yml` - from `dev1/pipeline` folder
+
+The purpose of `networking-dev1.yml` is to ensure that the `dev1` deployment uses unique networking address ranges from the other deployments.
+
+The purpose of `scaling-dev1.yml` is to document the size of the `dev1` Redis cluster.
