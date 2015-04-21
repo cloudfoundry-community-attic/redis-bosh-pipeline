@@ -67,12 +67,23 @@ jobs:
     - get: resource-pipeline-staging
     - get: pipeline
       resource: resource-pipeline
-      trigger: false
-      passed: [job-deploy-integration]
+      # TODO uncomment when not developing this job
+      # trigger: false
+      # passed: [job-deploy-integration]
     - get: release-version
       resource: resource-release-version
       passed: [job-deploy-integration]
       trigger: false
+  - task: ls
+    config:
+      platform: linux
+      image: docker:///ubuntu#14.04
+      inputs:
+      - {name: pipeline}
+      - {name: candidate-assets}
+      run:
+        path: ls
+        args: ["-opR", "."]
   - task: unpack-assets
     config:
       platform: linux
@@ -82,7 +93,7 @@ jobs:
       - {name: candidate-assets}
       run:
         path: ./pipeline/staging/bin/unpack_assets.sh
-        args: [candidate-assets]
+        args: [candidate-assets/pipeline-assets-*.tgz]
   # - task: make-manifest
   #   config:
   #     platform: linux
