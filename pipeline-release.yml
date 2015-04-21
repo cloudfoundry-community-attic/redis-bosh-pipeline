@@ -81,7 +81,7 @@ jobs:
       - {name: pipeline}
       - {name: candidate-assets}
       run:
-        path: ./integration/bin/unpack_assets.sh
+        path: ./pipeline/staging/bin/unpack_assets.sh
         args: [candidate-assets]
   # - task: make-manifest
   #   config:
