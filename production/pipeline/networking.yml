@@ -1,0 +1,53 @@
+meta:
+  security_groups:
+    - default
+  subnets:
+      - cloud_properties:
+          name: random
+        range: 10.244.16.0/30
+        reserved:
+        - 10.244.16.1
+        static:
+        - 10.244.16.2
+      - cloud_properties:
+          name: random
+        range: 10.244.16.4/30
+        reserved:
+        - 10.244.16.5
+        static: []
+      - cloud_properties:
+          name: random
+        range: 10.244.16.8/30
+        reserved:
+        - 10.244.16.9
+        static: []
+      - cloud_properties:
+          name: random
+        range: 10.244.16.12/30
+        reserved:
+        - 10.244.16.13
+        static: []
+      - cloud_properties:
+          name: random
+        range: 10.244.16.16/30
+        reserved:
+        - 10.244.16.17
+        static: []
+      - cloud_properties:
+          name: random
+        range: 10.244.16.20/30
+        reserved:
+        - 10.244.16.21
+        static: []
+      - cloud_properties:
+          name: random
+        range: 10.244.16.24/30
+        reserved:
+        - 10.244.16.25
+        static: []
+      - cloud_properties:
+          name: random
+        range: 10.244.16.28/30
+        reserved:
+        - 10.244.16.29
+        static: []

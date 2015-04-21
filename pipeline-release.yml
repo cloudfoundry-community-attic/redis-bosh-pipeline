@@ -4,6 +4,7 @@ groups:
   jobs:
   - job-deploy-integration
   - job-deploy-staging
+  - job-deploy-production
 
 jobs:
 - name: job-deploy-integration
@@ -68,8 +69,8 @@ jobs:
     - get: pipeline
       resource: resource-pipeline
       trigger: false
-      # TODO uncomment when not developing this job
-      # passed: [job-deploy-integration]
+      # TODO comment the following when developing this job
+      passed: [job-deploy-integration]
     - get: release-version
       resource: resource-release-version
       passed: [job-deploy-integration]
@@ -86,15 +87,6 @@ jobs:
         args:
         - candidate-assets/pipeline-assets-*.tgz
         - staging
-  - task: ls
-    config:
-      platform: linux
-      image: docker:///ubuntu#14.04
-      inputs:
-      - {name: unpack-assets, path: .}
-      run:
-        path: ls
-        args: ["-opR", "staging"]
   - task: make-manifest
     config:
       platform: linux
@@ -106,6 +98,59 @@ jobs:
   - put: resource-bosh-deployment-staging
     params:
       manifest: make-manifest/staging/manifest.yml
+      releases: []
+      stemcells: []
+
+- name: job-deploy-production
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - get: candidate-assets
+      resource: s3-pipeline-release-candidate
+      passed: [job-deploy-staging]
+    - get: resource-pipeline-production
+    - get: pipeline
+      resource: resource-pipeline
+      trigger: false
+      # TODO uncomment when not developing this job
+      # passed: [job-deploy-staging]
+    - get: release-version
+      resource: resource-release-version
+      passed: [job-deploy-staging]
+      trigger: false
+  - task: unpack-assets
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: pipeline, path: .}
+      - {name: candidate-assets}
+      run:
+        path: ./production/bin/unpack_assets.sh
+        args:
+        - candidate-assets/pipeline-assets-*.tgz
+        - production
+  # - task: ls
+  #   config:
+  #     platform: linux
+  #     image: docker:///ubuntu#14.04
+  #     inputs:
+  #     - {name: unpack-assets, path: .}
+  #     run:
+  #       path: ls
+  #       args: ["-opR", "staging"]
+  - task: make-manifest
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: unpack-assets, path: .}
+      run: {path: ./production/bin/make_manifest_and_save.sh}
+
+  - put: resource-bosh-deployment-production
+    params:
+      manifest: make-manifest/production/manifest.yml
       releases: []
       stemcells: []
 
@@ -142,7 +187,16 @@ resources:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
     branch: master
     private_key: {{github-private-key}}
-    paths: [integration/pipeline]
+    paths: [staging/pipeline]
+
+# resource-pipeline-production should only trigger on pipeline-specific changes
+- name: resource-pipeline-production
+  type: git
+  source:
+    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    branch: master
+    private_key: {{github-private-key}}
+    paths: [production/pipeline]
 
 - name: resource-bosh-deployment-integration
   type: bosh-deployment
@@ -160,6 +214,15 @@ resources:
     username: {{bosh-username}}
     password: {{bosh-password}}
     deployment: staging
+    ignore_ssl: true
+
+- name: resource-bosh-deployment-production
+  type: bosh-deployment
+  source:
+    target: {{bosh-target}}
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    deployment: production
     ignore_ssl: true
 
 - name: resource-release-version
