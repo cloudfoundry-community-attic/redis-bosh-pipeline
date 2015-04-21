@@ -38,12 +38,11 @@ jobs:
       platform: linux
       image: {{docker-hub-task-image}}
       inputs:
-      - name: pipeline
       - name: make-manifest
       run:
         path: ./make-manifest/integration/bin/git-add-all.sh
         args:
-          - pipeline
+          - make-manifest
           - "[integration] Update manifest"
   - put: resource-pipeline
     params:
