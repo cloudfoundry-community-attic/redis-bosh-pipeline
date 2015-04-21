@@ -82,7 +82,7 @@ jobs:
       - {name: pipeline, path: .}
       - {name: candidate-assets}
       run:
-        path: ./pipeline/staging/bin/unpack_assets.sh
+        path: ./staging/bin/unpack_assets.sh
         args:
         - candidate-assets/pipeline-assets-*.tgz
         - staging
@@ -91,10 +91,10 @@ jobs:
       platform: linux
       image: docker:///ubuntu#14.04
       inputs:
-      - {name: unpack-assets/staging}
+      - {name: unpack-assets, path: .}
       run:
         path: ls
-        args: ["-opR", "."]
+        args: ["-opR", "staging"]
   - task: make-manifest
     config:
       platform: linux
