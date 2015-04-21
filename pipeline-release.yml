@@ -74,33 +74,40 @@ jobs:
       resource: resource-release-version
       passed: [job-deploy-integration]
       trigger: false
-  - task: ls
-    config:
-      platform: linux
-      image: docker:///ubuntu#14.04
-      inputs:
-      - {name: pipeline}
-      - {name: candidate-assets}
-      run:
-        path: ls
-        args: ["-opR", "."]
   - task: unpack-assets
     config:
       platform: linux
       image: {{docker-hub-task-image}}
       inputs:
-      - {name: pipeline}
+      - {name: pipeline, path: .}
       - {name: candidate-assets}
       run:
         path: ./pipeline/staging/bin/unpack_assets.sh
-        args: [candidate-assets/pipeline-assets-*.tgz]
-  # - task: make-manifest
-  #   config:
-  #     platform: linux
-  #     image: {{docker-hub-task-image}}
-  #     inputs:
-  #     - {name: pipeline, path: .}
-  #     run: {path: ./integration/bin/make_manifest_and_save.sh}
+        args:
+        - candidate-assets/pipeline-assets-*.tgz
+        - staging
+  - task: ls
+    config:
+      platform: linux
+      image: docker:///ubuntu#14.04
+      inputs:
+      - {name: unpack-assets/staging}
+      run:
+        path: ls
+        args: ["-opR", "."]
+  - task: make-manifest
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: unpack-assets, path: .}
+      run: {path: ./staging/bin/make_manifest_and_save.sh}
+
+  - put: resource-bosh-deployment-staging
+    params:
+      manifest: make-manifest/staging/manifest.yml
+      releases: []
+      stemcells: []
 
 resources:
 - name: resource-bosh-stemcell
@@ -144,6 +151,15 @@ resources:
     username: {{bosh-username}}
     password: {{bosh-password}}
     deployment: integration
+    ignore_ssl: true
+
+- name: resource-bosh-deployment-staging
+  type: bosh-deployment
+  source:
+    target: {{bosh-target}}
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    deployment: staging
     ignore_ssl: true
 
 - name: resource-release-version
