@@ -33,6 +33,21 @@ jobs:
       inputs:
       - {name: pipeline, path: .}
       run: {path: ./integration/bin/make_manifest_and_save.sh}
+  - task: git-add
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - name: pipeline
+      - name: make-manifest
+      run:
+        path: ./make-manifest/integration/bin/git-add-all.sh
+        args:
+          - pipeline
+          - "[integration] Update manifest"
+  - put: resource-pipeline
+    params:
+      repository: git-add/make-manifest
 
   - put: resource-bosh-deployment-integration
     params:
