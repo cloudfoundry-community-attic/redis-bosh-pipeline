@@ -14,13 +14,9 @@ jobs:
   - aggregate:
     - {get: stemcell, trigger: false}
     - {get: release-redis, trigger: false}
-    - get: pipeline
-      resource: git-pipeline
-      trigger: false
+    - {get: pipeline, resource: git-pipeline, trigger: false}
     - {get: integration-env-changes, trigger: true}
-    - get: release-version
-      trigger: false
-      params: {bump: patch}
+    - {get: release-version, trigger: false, params: {bump: patch}}
   - put: release-version
     params: {file: release-version/number}
 
@@ -36,22 +32,18 @@ jobs:
       platform: linux
       image: {{docker-hub-task-image}}
       inputs:
-      - name: make-manifest
+      - {name: make-manifest}
       run:
         path: ./make-manifest/integration/bin/git-add-stage-changes.sh
-        args:
-          - "[integration] Update manifest"
+        args: ["[integration] Update manifest"]
   - put: git-pipeline
-    params:
-      repository: git-add/make-manifest
+    params: {repository: git-add/make-manifest}
 
   - put: resource-bosh-deployment-integration
     params:
       manifest: make-manifest/integration/manifest.yml
-      releases:
-        - release-redis/*.tgz
-      stemcells:
-        - stemcell/*.tgz
+      releases: [release-redis/*.tgz]
+      stemcells: [stemcell/*.tgz]
 
   - task: save-deployment-pipeline
     config:
@@ -64,23 +56,8 @@ jobs:
       - {name: stemcell}
       run: {path: ./integration/bin/save_deployment_pipeline.sh}
 
-  - put: s3-pipeline-release-candidate-templates
-    params:
-      from: save-deployment-pipeline/pipeline-assets-(.*).tgz
-
-- name: job-deploy-integration-local
-  public: true
-  serial: true
-  plan:
-  - aggregate:
-    - {get: staging-env-changes, trigger: false}
-    - get: git-pipeline
-      trigger: false
-      # TODO comment the following when developing this job
-      passed: [job-deploy-integration]
-    - get: release-version
-      passed: [job-deploy-integration]
-      trigger: false
+  - put: s3-candidate-assets
+    params: {from: save-deployment-pipeline/pipeline-assets-(.*).tgz}
 
 - name: job-deploy-staging
   public: true
@@ -88,17 +65,12 @@ jobs:
   plan:
   - aggregate:
     - get: candidate-assets
-      resource: s3-pipeline-release-candidate-templates
+      resource: s3-candidate-assets
       passed: [job-deploy-integration]
       trigger: true
-    - get: staging-env-changes
-      trigger: true
-    - get: pipeline
-      resource: git-pipeline
-      trigger: false
-    - get: release-version
-      passed: [job-deploy-integration]
-      trigger: false
+    - {get: staging-env-changes, trigger: true}
+    - {get: pipeline, resource: git-pipeline, trigger: false}
+    - {get: release-version, passed: [job-deploy-integration], trigger: false}
   - task: unpack-assets
     config:
       platform: linux
@@ -108,9 +80,7 @@ jobs:
       - {name: candidate-assets}
       run:
         path: ./staging/bin/unpack_assets.sh
-        args:
-        - candidate-assets/pipeline-assets-*.tgz
-        - staging
+        args: ["candidate-assets/pipeline-assets-*.tgz", "staging"]
   - task: make-manifest
     config:
       platform: linux
@@ -126,8 +96,7 @@ jobs:
       - name: make-manifest
       run:
         path: ./make-manifest/staging/bin/git-add-stage-changes.sh
-        args:
-          - "[staging] Update manifest"
+        args: ["[staging] Update manifest"]
   - put: git-pipeline
     params:
       repository: git-add/make-manifest
@@ -144,17 +113,12 @@ jobs:
   plan:
   - aggregate:
     - get: candidate-assets
-      resource: s3-pipeline-release-candidate-templates
+      resource: s3-candidate-assets
       passed: [job-deploy-staging]
       trigger: true
-    - get: production-env-changes
-      trigger: true
-    - get: pipeline
-      resource: git-pipeline
-      trigger: false
-    - get: release-version
-      passed: [job-deploy-staging]
-      trigger: false
+    - {get: production-env-changes, trigger: true}
+    - {get: pipeline, resource: git-pipeline, trigger: false}
+    - {get: release-version, passed: [job-deploy-staging], trigger: false}
   - task: unpack-assets
     config:
       platform: linux
@@ -164,18 +128,7 @@ jobs:
       - {name: candidate-assets}
       run:
         path: ./production/bin/unpack_assets.sh
-        args:
-        - candidate-assets/pipeline-assets-*.tgz
-        - production
-  # - task: ls
-  #   config:
-  #     platform: linux
-  #     image: docker:///ubuntu#14.04
-  #     inputs:
-  #     - {name: unpack-assets, path: .}
-  #     run:
-  #       path: ls
-  #       args: ["-opR", "staging"]
+        args: ["candidate-assets/pipeline-assets-*.tgz", "production"]
   - task: make-manifest
     config:
       platform: linux
@@ -191,8 +144,7 @@ jobs:
       - name: make-manifest
       run:
         path: ./make-manifest/production/bin/git-add-stage-changes.sh
-        args:
-          - "[production] Update manifest"
+        args: ["[production] Update manifest"]
   - put: git-pipeline
     params:
       repository: git-add/make-manifest
@@ -284,7 +236,7 @@ resources:
     secret_access_key: {{aws-secret-access-key}}
     region_name: us-east-1
 
-- name: s3-pipeline-release-candidate-templates
+- name: s3-candidate-assets
   type: s3
   source:
     access_key_id: {{aws-access-key-id}}
