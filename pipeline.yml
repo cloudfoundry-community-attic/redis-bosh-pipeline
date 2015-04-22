@@ -37,7 +37,9 @@ jobs:
         path: ./make-manifest/integration/bin/git-add-stage-changes.sh
         args: ["[integration] Update manifest"]
   - put: git-pipeline
-    params: {repository: git-add/make-manifest}
+    params:
+      repository: git-add/make-manifest
+      rebase: true
 
   - put: resource-bosh-deployment-integration
     params:
@@ -100,6 +102,7 @@ jobs:
   - put: git-pipeline
     params:
       repository: git-add/make-manifest
+      rebase: true
 
   - put: resource-bosh-deployment-staging
     params:
@@ -148,6 +151,7 @@ jobs:
   - put: git-pipeline
     params:
       repository: git-add/make-manifest
+      rebase: true
 
   - put: resource-bosh-deployment-production
     params:
