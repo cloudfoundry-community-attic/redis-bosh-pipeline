@@ -1,6 +1,12 @@
 Redis BOSH deployment pipeline
 ==============================
 
+NOTE: this readme was written first, then the pipeline was developed and I haven't yet updated the README to reflect what I've actually implemented so far.
+
+But here's a picture:
+
+![pipeline](http://cl.ly/image/3e3F211s3J1t/Concourse.png)
+
 This repository is an example of a corporate pipeline for a BOSH deployment through to production.
 
 There are 4 deployments described (`dev1`, `dev2`, `staging` and `production`) of the https://github.com/cloudfoundry-community/redis-boshrelease Redis BOSH release.
