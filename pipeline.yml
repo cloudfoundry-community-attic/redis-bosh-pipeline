@@ -2,9 +2,10 @@
 groups:
 - name: release
   jobs:
-  - update-integration
   - deploy-integration
+  - update-integration
   - deploy-staging
+  - update-staging
   - deploy-production
 
 jobs:
@@ -102,13 +103,13 @@ jobs:
 - name: deploy-staging
   public: true
   serial: true
+  serial_groups: [staging]
   plan:
   - aggregate:
     - get: candidate-assets
       resource: s3-candidate-assets
       passed: [deploy-integration]
       trigger: true
-    - {get: staging-env-changes, trigger: true}
     - {get: pipeline, resource: git-pipeline, trigger: false}
     - {get: release-version, passed: [deploy-integration], trigger: false}
   - task: unpack-assets
@@ -147,6 +148,36 @@ jobs:
       manifest: make-manifest/staging/manifest.yml
       releases: []
       stemcells: []
+
+- name: update-staging
+  public: true
+  serial: true
+  serial_groups: [staging]
+  plan:
+  - aggregate:
+    - {get: pipeline, resource: git-pipeline, passed: [deploy-integration], trigger: false}
+    - {get: staging-env-changes, trigger: true}
+
+  - task: make-manifest
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: pipeline, path: .}
+      run: {path: ./staging/bin/make_manifest_and_save.sh}
+  - task: git-add
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: make-manifest}
+      run:
+        path: ./make-manifest/staging/bin/git-add-stage-changes.sh
+        args: ["[staging] Update local manifest only"]
+  - put: git-pipeline
+    params:
+      repository: git-add/make-manifest
+      rebase: true
 
 - name: deploy-production
   public: true
