@@ -17,7 +17,7 @@ jobs:
     - get: pipeline
       resource: git-pipeline
       trigger: false
-    - get: git-pipeline-integration
+    - {get: git-pipeline-integration, trigger: true}
     - get: release-version
       trigger: false
       params: {bump: patch}
@@ -90,7 +90,9 @@ jobs:
     - get: candidate-assets
       resource: s3-pipeline-release-candidate-templates
       passed: [job-deploy-integration]
+      trigger: true
     - get: git-pipeline-staging
+      trigger: true
     - get: pipeline
       resource: git-pipeline
       trigger: false
@@ -146,7 +148,9 @@ jobs:
     - get: candidate-assets
       resource: s3-pipeline-release-candidate-templates
       passed: [job-deploy-staging]
+      trigger: true
     - get: git-pipeline-production
+      trigger: true
     - get: pipeline
       resource: git-pipeline
       trigger: false
