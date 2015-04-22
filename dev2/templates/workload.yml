@@ -1,8 +1,0 @@
-meta:
-  job_templates:
-    - name: redis
-      release: redis
-
-releases:
-  - name: redis
-    version: latest
