@@ -16,6 +16,7 @@ jobs:
     - {get: release-redis, trigger: false}
     - {get: pipeline, resource: git-pipeline, trigger: false}
     - {get: integration-env-changes, trigger: true}
+    - {get: integration-template-changes, trigger: true}
     - {get: release-version, trigger: false, params: {bump: patch}}
   - put: release-version
     params: {file: release-version/number}
@@ -183,9 +184,17 @@ resources:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
     branch: master
     private_key: {{github-private-key}}
-    paths: [integration/environment, integration/templates]
+    paths: [integration/environment]
 
-# staging-env-changes should only trigger on pipeline-specific changes
+- name: integration-template-changes
+  type: git
+  source:
+    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    branch: master
+    private_key: {{github-private-key}}
+    paths: [integration/templates]
+
+# staging-env-changes should only trigger on environment-specific changes
 - name: staging-env-changes
   type: git
   source:
@@ -194,7 +203,7 @@ resources:
     private_key: {{github-private-key}}
     paths: [staging/environment]
 
-# production-env-changes should only trigger on pipeline-specific changes
+# production-env-changes should only trigger on environment-specific changes
 - name: production-env-changes
   type: git
   source:
