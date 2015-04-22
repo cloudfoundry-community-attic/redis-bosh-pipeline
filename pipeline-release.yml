@@ -227,7 +227,7 @@ resources:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
     branch: master
     private_key: {{github-private-key}}
-    paths: [integration/pipeline, integration/templates]
+    paths: [integration/environment, integration/templates]
 
 # staging-env-changes should only trigger on pipeline-specific changes
 - name: staging-env-changes
@@ -236,7 +236,7 @@ resources:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
     branch: master
     private_key: {{github-private-key}}
-    paths: [staging/pipeline]
+    paths: [staging/environment]
 
 # production-env-changes should only trigger on pipeline-specific changes
 - name: production-env-changes
@@ -245,7 +245,7 @@ resources:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
     branch: master
     private_key: {{github-private-key}}
-    paths: [production/pipeline]
+    paths: [production/environment]
 
 - name: resource-bosh-deployment-integration
   type: bosh-deployment
