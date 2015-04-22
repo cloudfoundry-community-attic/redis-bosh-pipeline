@@ -42,7 +42,6 @@ jobs:
       run:
         path: ./make-manifest/integration/bin/git-add-all.sh
         args:
-          - make-manifest
           - "[integration] Update manifest"
   - put: resource-pipeline
     params:
@@ -117,7 +116,6 @@ jobs:
       run:
         path: ./make-manifest/staging/bin/git-add-all.sh
         args:
-          - make-manifest
           - "[staging] Update manifest"
   - put: resource-pipeline
     params:
@@ -184,7 +182,6 @@ jobs:
       run:
         path: ./make-manifest/production/bin/git-add-all.sh
         args:
-          - make-manifest
           - "[production] Update manifest"
   - put: resource-pipeline
     params:
