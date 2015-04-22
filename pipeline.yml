@@ -155,7 +155,7 @@ jobs:
   serial_groups: [staging]
   plan:
   - aggregate:
-    - {get: pipeline, resource: git-pipeline, passed: [deploy-integration], trigger: false}
+    - {get: pipeline, resource: git-pipeline, trigger: false}
     - {get: staging-env-changes, trigger: true}
 
   - task: make-manifest
