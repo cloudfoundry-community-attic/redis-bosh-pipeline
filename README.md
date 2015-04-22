@@ -5,7 +5,7 @@ NOTE: this readme was written first, then the pipeline was developed and I haven
 
 But here's a picture:
 
-![pipeline](http://cl.ly/image/3e3F211s3J1t/Concourse.png)
+![pipeline](http://cl.ly/image/040n2c0M180r/pipeline_changes_vs_environment_changes.png)
 
 This repository is an example of a corporate pipeline for a BOSH deployment through to production.
 
