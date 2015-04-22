@@ -41,7 +41,7 @@ jobs:
       repository: git-add/make-manifest
       rebase: true
 
-  - put: resource-bosh-deployment-integration
+  - put: deployment-integration
     params:
       manifest: make-manifest/integration/manifest.yml
       releases: [release-redis/*.tgz]
@@ -104,7 +104,7 @@ jobs:
       repository: git-add/make-manifest
       rebase: true
 
-  - put: resource-bosh-deployment-staging
+  - put: deployment-staging
     params:
       manifest: make-manifest/staging/manifest.yml
       releases: []
@@ -153,7 +153,7 @@ jobs:
       repository: git-add/make-manifest
       rebase: true
 
-  - put: resource-bosh-deployment-production
+  - put: deployment-production
     params:
       manifest: make-manifest/production/manifest.yml
       releases: []
@@ -203,7 +203,7 @@ resources:
     private_key: {{github-private-key}}
     paths: [production/environment]
 
-- name: resource-bosh-deployment-integration
+- name: deployment-integration
   type: bosh-deployment
   source:
     target: {{bosh-target}}
@@ -212,7 +212,7 @@ resources:
     deployment: integration
     ignore_ssl: true
 
-- name: resource-bosh-deployment-staging
+- name: deployment-staging
   type: bosh-deployment
   source:
     target: {{bosh-target}}
@@ -221,7 +221,7 @@ resources:
     deployment: staging
     ignore_ssl: true
 
-- name: resource-bosh-deployment-production
+- name: deployment-production
   type: bosh-deployment
   source:
     target: {{bosh-target}}
