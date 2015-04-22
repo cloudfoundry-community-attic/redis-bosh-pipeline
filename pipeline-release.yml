@@ -12,8 +12,8 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - {get: resource-bosh-stemcell, trigger: false}
-    - {get: resource-bosh-release-redis, trigger: false}
+    - {get: stemcell, trigger: false}
+    - {get: release-redis, trigger: false}
     - get: pipeline
       resource: resource-pipeline
       trigger: false
@@ -51,9 +51,9 @@ jobs:
     params:
       manifest: make-manifest/integration/manifest.yml
       releases:
-        - resource-bosh-release-redis/*.tgz
+        - release-redis/*.tgz
       stemcells:
-        - resource-bosh-stemcell/*.tgz
+        - stemcell/*.tgz
 
   - task: save-deployment-pipeline
     config:
@@ -62,13 +62,28 @@ jobs:
       inputs:
       - {name: release-version}
       - {name: make-manifest, path: .}
-      - {name: resource-bosh-release-redis}
-      - {name: resource-bosh-stemcell}
+      - {name: release-redis}
+      - {name: stemcell}
       run: {path: ./integration/bin/save_deployment_pipeline.sh}
 
   - put: s3-pipeline-release-candidate-templates
     params:
       from: save-deployment-pipeline/pipeline-assets-(.*).tgz
+
+- name: job-deploy-integration-local
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - {get: resource-pipeline-staging, trigger: false}
+    - get: resource-pipeline
+      trigger: false
+      # TODO comment the following when developing this job
+      passed: [job-deploy-integration]
+    - get: release-version
+      resource: resource-release-version
+      passed: [job-deploy-integration]
+      trigger: false
 
 - name: job-deploy-staging
   public: true
@@ -194,13 +209,13 @@ jobs:
       stemcells: []
 
 resources:
-- name: resource-bosh-stemcell
+- name: stemcell
   type: bosh-io-stemcell
   source:
     name: {{bosh-stemcell-name}}
     version: {{bosh-stemcell-version}}
 
-- name: resource-bosh-release-redis
+- name: release-redis
   type: bosh-io-release
   source: {repository: cloudfoundry-community/redis-boshrelease}
 
