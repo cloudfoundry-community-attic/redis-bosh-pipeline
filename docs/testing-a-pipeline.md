@@ -27,6 +27,8 @@ With a pipeline uploaded we have the ability to:
 
 We can then wait for jobs to finish via the Concourse ATC API and/or wait for output resources to be updated.
 
+And timeouts. Sometimes you expect things to happen quickly if they are going to happen at all.
+
 Simulated resources
 -------------------
 
