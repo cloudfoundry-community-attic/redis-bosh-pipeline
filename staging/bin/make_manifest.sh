@@ -9,8 +9,8 @@ spiff merge \
   templates/infrastructure-warden.yml \
   templates/workload.yml \
   templates/stemcell.yml \
-  pipeline/networking.yml \
-  pipeline/properties.yml \
-  pipeline/director.yml \
-  pipeline/name.yml \
-  pipeline/scaling.yml
+  environment/networking.yml \
+  environment/properties.yml \
+  environment/director.yml \
+  environment/name.yml \
+  environment/scaling.yml
