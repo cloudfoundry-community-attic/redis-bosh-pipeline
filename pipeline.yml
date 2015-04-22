@@ -179,6 +179,12 @@ jobs:
       repository: git-add/make-manifest
       rebase: true
 
+  - put: deployment-staging
+    params:
+      manifest: make-manifest/staging/manifest.yml
+      releases: []
+      stemcells: []
+
 - name: deploy-production
   public: true
   serial: true
