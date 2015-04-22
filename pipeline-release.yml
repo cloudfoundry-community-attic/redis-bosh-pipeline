@@ -150,8 +150,8 @@ jobs:
     - get: pipeline
       resource: git-pipeline
       trigger: false
-      # TODO uncomment when not developing this job
-      # passed: [job-deploy-staging]
+      # TODO comment when developing this job
+      passed: [job-deploy-staging]
     - get: release-version
       passed: [job-deploy-staging]
       trigger: false
