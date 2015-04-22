@@ -2,6 +2,7 @@
 groups:
 - name: release
   jobs:
+  - update-integration
   - deploy-integration
   - deploy-staging
   - deploy-production
@@ -10,12 +11,12 @@ jobs:
 - name: deploy-integration
   public: true
   serial: true
+  serial_groups: [integration]
   plan:
   - aggregate:
     - {get: stemcell, trigger: false}
     - {get: release-redis, trigger: false}
     - {get: pipeline, resource: git-pipeline, trigger: false}
-    - {get: integration-env-changes, trigger: true}
     - {get: integration-template-changes, trigger: true}
     - {get: release-version, trigger: false, params: {bump: patch}}
   - put: release-version
@@ -36,7 +37,7 @@ jobs:
       - {name: make-manifest}
       run:
         path: ./make-manifest/integration/bin/git-add-stage-changes.sh
-        args: ["[integration] Update manifest"]
+        args: ["[integration] Update manifest & trigger pipeline"]
   - put: git-pipeline
     params:
       repository: git-add/make-manifest
@@ -61,6 +62,42 @@ jobs:
 
   - put: s3-candidate-assets
     params: {from: save-deployment-pipeline/pipeline-assets-(.*).tgz}
+
+- name: update-integration
+  public: true
+  serial: true
+  serial_groups: [integration]
+  plan:
+  - aggregate:
+    - {get: pipeline, resource: git-pipeline, trigger: false}
+    - {get: integration-env-changes, trigger: true}
+
+  - task: make-manifest
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: pipeline, path: .}
+      run: {path: ./integration/bin/make_manifest_and_save.sh}
+  - task: git-add
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: make-manifest}
+      run:
+        path: ./make-manifest/integration/bin/git-add-stage-changes.sh
+        args: ["[integration] Update local manifest only"]
+  - put: git-pipeline
+    params:
+      repository: git-add/make-manifest
+      rebase: true
+
+  - put: deployment-integration
+    params:
+      manifest: make-manifest/integration/manifest.yml
+      releases: []
+      stemcells: []
 
 - name: deploy-staging
   public: true
