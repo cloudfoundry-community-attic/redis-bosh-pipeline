@@ -38,7 +38,7 @@ jobs:
       inputs:
       - name: make-manifest
       run:
-        path: ./make-manifest/integration/bin/git-add-all.sh
+        path: ./make-manifest/integration/bin/git-add-stage-changes.sh
         args:
           - "[integration] Update manifest"
   - put: git-pipeline
@@ -125,7 +125,7 @@ jobs:
       inputs:
       - name: make-manifest
       run:
-        path: ./make-manifest/staging/bin/git-add-all.sh
+        path: ./make-manifest/staging/bin/git-add-stage-changes.sh
         args:
           - "[staging] Update manifest"
   - put: git-pipeline
@@ -190,7 +190,7 @@ jobs:
       inputs:
       - name: make-manifest
       run:
-        path: ./make-manifest/production/bin/git-add-all.sh
+        path: ./make-manifest/production/bin/git-add-stage-changes.sh
         args:
           - "[production] Update manifest"
   - put: git-pipeline

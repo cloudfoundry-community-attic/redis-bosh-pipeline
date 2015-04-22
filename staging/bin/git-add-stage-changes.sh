@@ -4,7 +4,7 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 message=$1; shift
 if [[ "${message}X" == "X" ]]; then
-  echo "USAGE: git-add-all.sh 'commit message'"
+  echo "USAGE: git-add-stage-changes.sh 'commit message'"
   exit 1
 fi
 
