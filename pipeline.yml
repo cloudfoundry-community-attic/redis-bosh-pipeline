@@ -7,6 +7,7 @@ groups:
   - deploy-staging
   - update-staging
   - deploy-production
+  - update-production
 
 jobs:
 - name: deploy-integration
@@ -188,6 +189,7 @@ jobs:
 - name: deploy-production
   public: true
   serial: true
+  serial_groups: [production]
   plan:
   - aggregate:
     - get: candidate-assets
@@ -223,6 +225,42 @@ jobs:
       run:
         path: ./make-manifest/production/bin/git-add-stage-changes.sh
         args: ["[production] Update manifest"]
+  - put: git-pipeline
+    params:
+      repository: git-add/make-manifest
+      rebase: true
+
+  - put: deployment-production
+    params:
+      manifest: make-manifest/production/manifest.yml
+      releases: []
+      stemcells: []
+
+- name: update-production
+  public: true
+  serial: true
+  serial_groups: [production]
+  plan:
+  - aggregate:
+    - {get: pipeline, resource: git-pipeline, trigger: false}
+    - {get: production-env-changes, trigger: true}
+
+  - task: make-manifest
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: pipeline, path: .}
+      run: {path: ./production/bin/make_manifest_and_save.sh}
+  - task: git-add
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: make-manifest}
+      run:
+        path: ./make-manifest/production/bin/git-add-stage-changes.sh
+        args: ["[production] Update local manifest only"]
   - put: git-pipeline
     params:
       repository: git-add/make-manifest
