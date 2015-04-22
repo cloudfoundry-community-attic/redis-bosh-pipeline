@@ -17,7 +17,7 @@ jobs:
     - get: pipeline
       resource: git-pipeline
       trigger: false
-    - {get: git-pipeline-integration, trigger: true}
+    - {get: integration-env-changes, trigger: true}
     - get: release-version
       trigger: false
       params: {bump: patch}
@@ -73,7 +73,7 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - {get: git-pipeline-staging, trigger: false}
+    - {get: staging-env-changes, trigger: false}
     - get: git-pipeline
       trigger: false
       # TODO comment the following when developing this job
@@ -91,13 +91,11 @@ jobs:
       resource: s3-pipeline-release-candidate-templates
       passed: [job-deploy-integration]
       trigger: true
-    - get: git-pipeline-staging
+    - get: staging-env-changes
       trigger: true
     - get: pipeline
       resource: git-pipeline
       trigger: false
-      # TODO comment the following when developing this job
-      passed: [job-deploy-integration]
     - get: release-version
       passed: [job-deploy-integration]
       trigger: false
@@ -149,13 +147,11 @@ jobs:
       resource: s3-pipeline-release-candidate-templates
       passed: [job-deploy-staging]
       trigger: true
-    - get: git-pipeline-production
+    - get: production-env-changes
       trigger: true
     - get: pipeline
       resource: git-pipeline
       trigger: false
-      # TODO comment when developing this job
-      passed: [job-deploy-staging]
     - get: release-version
       passed: [job-deploy-staging]
       trigger: false
@@ -225,7 +221,7 @@ resources:
     branch: master
     private_key: {{github-private-key}}
 
-- name: git-pipeline-integration
+- name: integration-env-changes
   type: git
   source:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
@@ -233,8 +229,8 @@ resources:
     private_key: {{github-private-key}}
     paths: [integration/pipeline, integration/templates]
 
-# git-pipeline-staging should only trigger on pipeline-specific changes
-- name: git-pipeline-staging
+# staging-env-changes should only trigger on pipeline-specific changes
+- name: staging-env-changes
   type: git
   source:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
@@ -242,8 +238,8 @@ resources:
     private_key: {{github-private-key}}
     paths: [staging/pipeline]
 
-# git-pipeline-production should only trigger on pipeline-specific changes
-- name: git-pipeline-production
+# production-env-changes should only trigger on pipeline-specific changes
+- name: production-env-changes
   type: git
   source:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
