@@ -20,7 +20,7 @@ jobs:
   templates:
   - name: redis
     release: redis
-- instances: 4
+- instances: 1
   name: redis_z1
   networks:
   - name: redis1
@@ -104,7 +104,7 @@ resource_pools:
     name: random
   name: small_z1
   network: redis1
-  size: 5
+  size: 2
   stemcell:
     name: bosh-warden-boshlite-ubuntu-trusty-go_agent
     version: 2776
