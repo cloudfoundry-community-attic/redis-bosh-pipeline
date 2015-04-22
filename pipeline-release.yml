@@ -2,12 +2,12 @@
 groups:
 - name: release
   jobs:
-  - job-deploy-integration
-  - job-deploy-staging
-  - job-deploy-production
+  - deploy-integration
+  - deploy-staging
+  - deploy-production
 
 jobs:
-- name: job-deploy-integration
+- name: deploy-integration
   public: true
   serial: true
   plan:
@@ -59,18 +59,18 @@ jobs:
   - put: s3-candidate-assets
     params: {from: save-deployment-pipeline/pipeline-assets-(.*).tgz}
 
-- name: job-deploy-staging
+- name: deploy-staging
   public: true
   serial: true
   plan:
   - aggregate:
     - get: candidate-assets
       resource: s3-candidate-assets
-      passed: [job-deploy-integration]
+      passed: [deploy-integration]
       trigger: true
     - {get: staging-env-changes, trigger: true}
     - {get: pipeline, resource: git-pipeline, trigger: false}
-    - {get: release-version, passed: [job-deploy-integration], trigger: false}
+    - {get: release-version, passed: [deploy-integration], trigger: false}
   - task: unpack-assets
     config:
       platform: linux
@@ -107,18 +107,18 @@ jobs:
       releases: []
       stemcells: []
 
-- name: job-deploy-production
+- name: deploy-production
   public: true
   serial: true
   plan:
   - aggregate:
     - get: candidate-assets
       resource: s3-candidate-assets
-      passed: [job-deploy-staging]
+      passed: [deploy-staging]
       trigger: true
     - {get: production-env-changes, trigger: true}
     - {get: pipeline, resource: git-pipeline, trigger: false}
-    - {get: release-version, passed: [job-deploy-staging], trigger: false}
+    - {get: release-version, passed: [deploy-staging], trigger: false}
   - task: unpack-assets
     config:
       platform: linux
