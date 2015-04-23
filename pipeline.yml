@@ -16,8 +16,8 @@ jobs:
   serial_groups: [integration]
   plan:
   - aggregate:
-    - {get: stemcell, trigger: false}
-    - {get: release-redis, trigger: false}
+    - {get: stemcell, trigger: true}
+    - {get: release-redis, trigger: true}
     - {get: pipeline, resource: git-pipeline, trigger: false}
     - {get: integration-template-changes, trigger: true}
     - {get: release-version, trigger: false, params: {bump: patch}}
