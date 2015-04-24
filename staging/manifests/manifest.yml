@@ -1,1 +1,116 @@
-missing resource input bin/releases/redis/version
+compilation:
+  cloud_properties:
+    name: random
+  network: redis1
+  reuse_compilation_vms: true
+  workers: 6
+director_uuid: 7acfe0e0-e876-4d90-ba3f-7b552a20461e
+jobs:
+- instances: 1
+  name: redis_leader_z1
+  networks:
+  - name: redis1
+    static_ips:
+    - 10.244.15.2
+  persistent_disk: 4096
+  properties:
+    network: redis1
+    redis: null
+  resource_pool: small_z1
+  templates:
+  - name: redis
+    release: redis
+- instances: 1
+  name: redis_z1
+  networks:
+  - name: redis1
+    static_ips: null
+  persistent_disk: 4096
+  properties:
+    network: redis1
+    redis:
+      master: 10.244.15.2
+  resource_pool: small_z1
+  templates:
+  - name: redis
+    release: redis
+  update:
+    canaries: 10
+meta:
+  environment: null
+  stemcell:
+    name: bosh-warden-boshlite-ubuntu-trusty-go_agent
+    version: 2776
+name: staging
+networks:
+- name: redis1
+  subnets:
+  - cloud_properties:
+      name: random
+    range: 10.244.15.0/30
+    reserved:
+    - 10.244.15.1
+    static:
+    - 10.244.15.2
+  - cloud_properties:
+      name: random
+    range: 10.244.15.4/30
+    reserved:
+    - 10.244.15.5
+    static: []
+  - cloud_properties:
+      name: random
+    range: 10.244.15.8/30
+    reserved:
+    - 10.244.15.9
+    static: []
+  - cloud_properties:
+      name: random
+    range: 10.244.15.12/30
+    reserved:
+    - 10.244.15.13
+    static: []
+  - cloud_properties:
+      name: random
+    range: 10.244.15.16/30
+    reserved:
+    - 10.244.15.17
+    static: []
+  - cloud_properties:
+      name: random
+    range: 10.244.15.20/30
+    reserved:
+    - 10.244.15.21
+    static: []
+  - cloud_properties:
+      name: random
+    range: 10.244.15.24/30
+    reserved:
+    - 10.244.15.25
+    static: []
+  - cloud_properties:
+      name: random
+    range: 10.244.15.28/30
+    reserved:
+    - 10.244.15.29
+    static: []
+properties:
+  redis: {}
+releases:
+- name: redis
+  version: 9.1
+resource_pools:
+- cloud_properties:
+    name: random
+  name: small_z1
+  network: redis1
+  size: 2
+  stemcell:
+    name: bosh-warden-boshlite-ubuntu-trusty-go_agent
+    version: 2776
+update:
+  canaries: 1
+  canary_watch_time: 1000-100000
+  max_in_flight: 50
+  update_watch_time: 1000-100000
+
