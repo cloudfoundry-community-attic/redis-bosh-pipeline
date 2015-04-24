@@ -2,9 +2,19 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+stage=$(basename $DIR)
 cd $DIR/..
 
+if [[ ! -f releases/redis/version ]]; then
+  echo "missing resource input ${stage}/releases/redis/version"
+  exit
+fi
 REDIS_VERSION=$(cat releases/redis/version)
+
+if [[ ! -f stemcell/version ]]; then
+  echo "missing resource input ${stage}/stemcell/version"
+  exit
+fi
 STEMCELL_VERSION=$(cat stemcell/version)
 
 mkdir -p manifests
