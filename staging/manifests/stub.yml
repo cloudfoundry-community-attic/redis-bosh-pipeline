@@ -1,6 +1,6 @@
 ---
 meta:
   release_versions:
-    redis: 
+    redis: 9.1
   stemcell:
-    version: 
+    version: 2776

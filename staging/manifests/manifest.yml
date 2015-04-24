@@ -40,7 +40,7 @@ meta:
   environment: null
   stemcell:
     name: bosh-warden-boshlite-ubuntu-trusty-go_agent
-    version: null
+    version: 2776
 name: staging
 networks:
 - name: redis1
@@ -98,7 +98,7 @@ properties:
   redis: {}
 releases:
 - name: redis
-  version: null
+  version: 9.1
 resource_pools:
 - cloud_properties:
     name: random
@@ -107,7 +107,7 @@ resource_pools:
   size: 2
   stemcell:
     name: bosh-warden-boshlite-ubuntu-trusty-go_agent
-    version: null
+    version: 2776
 update:
   canaries: 1
   canary_watch_time: 1000-100000
