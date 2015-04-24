@@ -52,6 +52,15 @@ jobs:
       manifest: make-manifest/integration/manifests/manifest.yml
       releases: [release-redis/*.tgz]
       stemcells: [stemcell/*.tgz]
+  - task: acceptance-tests
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+        - {name: make-manifest}
+      run:
+        path: bosh
+        args: [-t, {{bosh-target}}, -u, {{bosh-username}}, -p, {{bosh-password}}, -d, make-manifest/integration/manifests/manifest.yml, run, errand, acceptance-tests]
 
   - task: save-deployment-pipeline
     config:
