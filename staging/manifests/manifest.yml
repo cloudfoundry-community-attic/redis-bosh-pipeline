@@ -37,10 +37,10 @@ jobs:
   update:
     canaries: 10
 meta:
-  environment: redis-warden
+  environment: null
   stemcell:
     name: bosh-warden-boshlite-ubuntu-trusty-go_agent
-    version: 2776
+    version: null
 name: staging
 networks:
 - name: redis1
@@ -98,7 +98,7 @@ properties:
   redis: {}
 releases:
 - name: redis
-  version: 9
+  version: null
 resource_pools:
 - cloud_properties:
     name: random
@@ -107,7 +107,7 @@ resource_pools:
   size: 2
   stemcell:
     name: bosh-warden-boshlite-ubuntu-trusty-go_agent
-    version: 2776
+    version: null
 update:
   canaries: 1
   canary_watch_time: 1000-100000
