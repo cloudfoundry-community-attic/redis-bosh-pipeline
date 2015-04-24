@@ -15,6 +15,8 @@ cp resource-bosh-stemcell/* pipeline-assets/stemcell/
 rm pipeline-assets/stemcell/*.tgz
 
 pipeline=$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )
+cp -r $pipeline/releases pipeline-assets/
+cp -r $pipeline/stemcell pipeline-assets/
 cp -r $pipeline/templates pipeline-assets/
 cp -r $pipeline/bin pipeline-assets/
 

@@ -1,10 +1,4 @@
 meta:
-  environment: redis-warden
-
-  stemcell:
-    name: bosh-warden-boshlite-ubuntu-trusty-go_agent
-    version: latest
-
   subnets: (( merge ))
 
 update:
