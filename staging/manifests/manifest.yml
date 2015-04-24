@@ -15,7 +15,8 @@ jobs:
   persistent_disk: 4096
   properties:
     network: redis1
-    redis: null
+    redis:
+      password: staging
   resource_pool: small_z1
   templates:
   - name: redis
@@ -30,12 +31,44 @@ jobs:
     network: redis1
     redis:
       master: 10.244.15.2
+      password: staging
   resource_pool: small_z1
   templates:
   - name: redis
     release: redis
   update:
     canaries: 10
+- instances: 1
+  name: redis_test_slave_z1
+  networks:
+  - name: redis1
+    static_ips:
+    - 10.244.15.6
+  persistent_disk: 4096
+  properties:
+    network: redis1
+    redis:
+      master: 10.244.15.2
+      password: staging
+  resource_pool: small_z1
+  templates:
+  - name: redis
+    release: redis
+- instances: 1
+  lifecycle: errand
+  name: acceptance-tests
+  networks:
+  - name: redis1
+    static_ips: null
+  properties:
+    redis:
+      master: 10.244.15.2
+      password: staging
+      slave: 10.244.15.6
+  resource_pool: small_z1
+  templates:
+  - name: acceptance-tests
+    release: redis
 meta:
   environment: null
   stemcell:
@@ -105,7 +138,7 @@ resource_pools:
     name: random
   name: small_z1
   network: redis1
-  size: 2
+  size: 4
   stemcell:
     name: bosh-warden-boshlite-ubuntu-trusty-go_agent
     version: 2776

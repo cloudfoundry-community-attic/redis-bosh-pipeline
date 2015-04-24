@@ -36,6 +36,7 @@ spiff merge \
   environment/networking.yml \
   environment/properties.yml \
   environment/director.yml \
+  environment/passwords.yml \
   environment/name.yml \
   environment/scaling.yml \
   manifests/stub.yml
