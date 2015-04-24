@@ -11,7 +11,7 @@ jobs:
   networks:
   - name: redis1
     static_ips:
-    - 10.244.15.2
+    - 10.244.16.2
   persistent_disk: 4096
   properties:
     network: redis1
@@ -29,7 +29,7 @@ jobs:
   properties:
     network: redis1
     redis:
-      master: 10.244.15.2
+      master: 10.244.16.2
   resource_pool: small_z1
   templates:
   - name: redis
@@ -37,68 +37,68 @@ jobs:
   update:
     canaries: 10
 meta:
-  environment: redis-warden
+  environment: null
   stemcell:
     name: bosh-warden-boshlite-ubuntu-trusty-go_agent
     version: 2776
-name: staging
+name: production
 networks:
 - name: redis1
   subnets:
   - cloud_properties:
       name: random
-    range: 10.244.15.0/30
+    range: 10.244.16.0/30
     reserved:
-    - 10.244.15.1
+    - 10.244.16.1
     static:
-    - 10.244.15.2
+    - 10.244.16.2
   - cloud_properties:
       name: random
-    range: 10.244.15.4/30
+    range: 10.244.16.4/30
     reserved:
-    - 10.244.15.5
+    - 10.244.16.5
     static: []
   - cloud_properties:
       name: random
-    range: 10.244.15.8/30
+    range: 10.244.16.8/30
     reserved:
-    - 10.244.15.9
+    - 10.244.16.9
     static: []
   - cloud_properties:
       name: random
-    range: 10.244.15.12/30
+    range: 10.244.16.12/30
     reserved:
-    - 10.244.15.13
+    - 10.244.16.13
     static: []
   - cloud_properties:
       name: random
-    range: 10.244.15.16/30
+    range: 10.244.16.16/30
     reserved:
-    - 10.244.15.17
+    - 10.244.16.17
     static: []
   - cloud_properties:
       name: random
-    range: 10.244.15.20/30
+    range: 10.244.16.20/30
     reserved:
-    - 10.244.15.21
+    - 10.244.16.21
     static: []
   - cloud_properties:
       name: random
-    range: 10.244.15.24/30
+    range: 10.244.16.24/30
     reserved:
-    - 10.244.15.25
+    - 10.244.16.25
     static: []
   - cloud_properties:
       name: random
-    range: 10.244.15.28/30
+    range: 10.244.16.28/30
     reserved:
-    - 10.244.15.29
+    - 10.244.16.29
     static: []
 properties:
   redis: {}
 releases:
 - name: redis
-  version: 9
+  version: 9.1
 resource_pools:
 - cloud_properties:
     name: random

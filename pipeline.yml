@@ -30,6 +30,8 @@ jobs:
       image: {{docker-hub-task-image}}
       inputs:
       - {name: pipeline, path: .}
+      - {name: stemcell, path: integration/stemcell}
+      - {name: release-redis, path: integration/releases/redis}
       run: {path: ./integration/bin/make_manifest_and_save.sh}
   - task: git-add
     config:
@@ -47,7 +49,7 @@ jobs:
 
   - put: deployment-integration
     params:
-      manifest: make-manifest/integration/manifest.yml
+      manifest: make-manifest/integration/manifests/manifest.yml
       releases: [release-redis/*.tgz]
       stemcells: [stemcell/*.tgz]
 
@@ -97,7 +99,7 @@ jobs:
 
   - put: deployment-integration
     params:
-      manifest: make-manifest/integration/manifest.yml
+      manifest: make-manifest/integration/manifests/manifest.yml
       releases: []
       stemcells: []
 
@@ -146,7 +148,7 @@ jobs:
 
   - put: deployment-staging
     params:
-      manifest: make-manifest/staging/manifest.yml
+      manifest: make-manifest/staging/manifests/manifest.yml
       releases: []
       stemcells: []
 
@@ -182,7 +184,7 @@ jobs:
 
   - put: deployment-staging
     params:
-      manifest: make-manifest/staging/manifest.yml
+      manifest: make-manifest/staging/manifests/manifest.yml
       releases: []
       stemcells: []
 
@@ -232,7 +234,7 @@ jobs:
 
   - put: deployment-production
     params:
-      manifest: make-manifest/production/manifest.yml
+      manifest: make-manifest/production/manifests/manifest.yml
       releases: []
       stemcells: []
 
@@ -268,7 +270,7 @@ jobs:
 
   - put: deployment-production
     params:
-      manifest: make-manifest/production/manifest.yml
+      manifest: make-manifest/production/manifests/manifest.yml
       releases: []
       stemcells: []
 
@@ -287,14 +289,14 @@ resources:
   type: git
   source:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
-    branch: master
+    branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
 
 - name: integration-env-changes
   type: git
   source:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
-    branch: master
+    branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
     paths: [integration/environment]
 
@@ -302,7 +304,7 @@ resources:
   type: git
   source:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
-    branch: master
+    branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
     paths: [integration/templates]
 
@@ -311,7 +313,7 @@ resources:
   type: git
   source:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
-    branch: master
+    branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
     paths: [staging/environment]
 
@@ -320,7 +322,7 @@ resources:
   type: git
   source:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
-    branch: master
+    branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
     paths: [production/environment]
 

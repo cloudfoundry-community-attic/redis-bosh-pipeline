@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-manifest=${manifest:-"manifest.yml"}
+manifest=${manifest:-"manifests/manifest.yml"}
 
 set -e
 
