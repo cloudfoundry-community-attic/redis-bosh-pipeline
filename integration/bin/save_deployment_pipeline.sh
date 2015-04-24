@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Inputs are:
+# - {name: make-manifest, path: .}
+# - {name: release-version}
+# - {name: release-redis}
+# - {name: stemcell}
+
 if [[ ! -f release-version/number ]]; then
   echo "save_deployment_pipeline.sh requires release-version/number to contain the candidate version number"
   exit 1
@@ -7,11 +13,12 @@ fi
 release_version=$(cat release-version/number)
 
 mkdir -p pipeline-assets/releases/redis
-cp resource-bosh-release-redis/* pipeline-assets/releases/redis/
+mkdir -p pipeline-assets/stemcell
+
+cp release-redis/* pipeline-assets/releases/redis/
 rm pipeline-assets/releases/redis/*.tgz
 
-mkdir -p pipeline-assets/stemcell
-cp resource-bosh-stemcell/* pipeline-assets/stemcell/
+cp stemcell/* pipeline-assets/stemcell/
 rm pipeline-assets/stemcell/*.tgz
 
 pipeline=$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )
