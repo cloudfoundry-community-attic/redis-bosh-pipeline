@@ -49,7 +49,7 @@ jobs:
 
   - put: deployment-integration
     params:
-      manifest: make-manifest/integration/manifest.yml
+      manifest: make-manifest/integration/manifests/manifest.yml
       releases: [release-redis/*.tgz]
       stemcells: [stemcell/*.tgz]
 
@@ -99,7 +99,7 @@ jobs:
 
   - put: deployment-integration
     params:
-      manifest: make-manifest/integration/manifest.yml
+      manifest: make-manifest/integration/manifests/manifest.yml
       releases: []
       stemcells: []
 
@@ -148,7 +148,7 @@ jobs:
 
   - put: deployment-staging
     params:
-      manifest: make-manifest/staging/manifest.yml
+      manifest: make-manifest/staging/manifests/manifest.yml
       releases: []
       stemcells: []
 
@@ -184,7 +184,7 @@ jobs:
 
   - put: deployment-staging
     params:
-      manifest: make-manifest/staging/manifest.yml
+      manifest: make-manifest/staging/manifests/manifest.yml
       releases: []
       stemcells: []
 
@@ -234,7 +234,7 @@ jobs:
 
   - put: deployment-production
     params:
-      manifest: make-manifest/production/manifest.yml
+      manifest: make-manifest/production/manifests/manifest.yml
       releases: []
       stemcells: []
 
@@ -270,7 +270,7 @@ jobs:
 
   - put: deployment-production
     params:
-      manifest: make-manifest/production/manifest.yml
+      manifest: make-manifest/production/manifests/manifest.yml
       releases: []
       stemcells: []
 

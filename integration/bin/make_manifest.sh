@@ -7,6 +7,7 @@ cd $DIR/..
 REDIS_VERSION=$(cat releases/redis/version)
 STEMCELL_VERSION=$(cat stemcell/version)
 
+mkdir -p manifests
 cat >manifests/stub.yml <<EOF
 ---
 meta:
