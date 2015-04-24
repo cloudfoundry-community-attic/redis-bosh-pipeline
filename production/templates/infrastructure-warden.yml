@@ -1,5 +1,6 @@
 meta:
   subnets: (( merge ))
+  test_slaves: 1
 
 update:
   canaries: 1
@@ -22,6 +23,23 @@ jobs:
       redis:
         master: (( jobs.redis_leader_z1.networks.redis1.static_ips.[0] ))
       network: redis1
+  - name: redis_test_slave_z1
+    persistent_disk: 4096
+    instances: 1
+    networks:
+      - name: redis1
+        static_ips: (( static_ips(1) ))
+    properties:
+      redis:
+        master: (( jobs.redis_leader_z1.networks.redis1.static_ips.[0] ))
+      network: redis1
+  - name: acceptance-tests
+    networks:
+      - name: redis1
+    properties:
+      redis:
+        master: (( jobs.redis_leader_z1.networks.redis1.static_ips.[0] ))
+        slave: (( jobs.redis_test_slave_z1.networks.redis1.static_ips.[0] ))
 
 compilation:
   cloud_properties:
