@@ -14,7 +14,8 @@ meta:
         range: 10.244.15.4/30
         reserved:
         - 10.244.15.5
-        static: []
+        static:
+        - 10.244.15.6
       - cloud_properties:
           name: random
         range: 10.244.15.8/30
