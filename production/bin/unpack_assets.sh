@@ -9,5 +9,9 @@ tar xfz ${assets_tgz}
 
 ls -opR pipeline-assets/
 
-cp -r pipeline-assets/bin $pipeline_stage_dir/
-cp -r pipeline-assets/templates $pipeline_stage_dir/
+rm -rf $pipeline_stage_dir/bin
+rm -rf $pipeline_stage_dir/templates
+rm -rf $pipeline_stage_dir/releases
+rm -rf $pipeline_stage_dir/stemcell
+
+cp -r pipeline-assets/* $pipeline_stage_dir/
