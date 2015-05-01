@@ -54,7 +54,7 @@ jobs:
       manifest: make-manifest/integration/manifests/manifest.yml
       releases: [release-redis/*.tgz]
       stemcells: [stemcell/*.tgz]
-  - task: acceptance-tests
+  - task: bosh-run-errand-acceptance-tests
     config:
       platform: linux
       image: {{docker-hub-task-image}}
