@@ -4,7 +4,7 @@ compilation:
   network: redis1
   reuse_compilation_vms: true
   workers: 6
-director_uuid: 7acfe0e0-e876-4d90-ba3f-7b552a20461e
+director_uuid: 9c7ca635-f6e5-43c3-a795-87ad19388cb9
 jobs:
 - instances: 1
   name: redis_leader_z1
