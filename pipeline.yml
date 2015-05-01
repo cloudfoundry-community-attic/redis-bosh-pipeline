@@ -3,10 +3,12 @@ groups:
 - name: release
   jobs:
   - deploy-integration
-  - update-integration
   - deploy-staging
-  - update-staging
   - deploy-production
+- name: updates
+  jobs:
+  - update-integration
+  - update-staging
   - update-production
 
 jobs:
