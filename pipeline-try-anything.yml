@@ -116,14 +116,14 @@ resources:
 - name: git-pipeline
   type: git
   source:
-    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    uri: {{pipeline-git-repo}}
     branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
 
 - name: try-anything-env-changes
   type: git
   source:
-    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    uri: {{pipeline-git-repo}}
     branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
     paths: [try-anything/environment]
@@ -131,7 +131,7 @@ resources:
 - name: try-anything-template-changes
   type: git
   source:
-    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    uri: {{pipeline-git-repo}}
     branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
     paths: [try-anything/templates]
