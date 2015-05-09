@@ -1,0 +1,174 @@
+---
+groups:
+- name: release
+  jobs:
+  - deploy-try-anything
+- name: updates
+  jobs:
+  - update-try-anything
+
+jobs:
+- name: deploy-try-anything
+  public: true
+  serial: true
+  serial_groups: [try-anything]
+  plan:
+  - aggregate:
+    - {get: stemcell, trigger: true}
+    - {get: release-redis, trigger: true}
+    - {get: pipeline, resource: git-pipeline, trigger: false}
+    - {get: try-anything-template-changes, trigger: true}
+    - {get: release-version, trigger: false, params: {bump: patch}}
+  - put: release-version
+    params: {file: release-version/number}
+
+  - task: make-manifest
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: pipeline, path: .}
+      - {name: stemcell, path: try-anything/stemcell}
+      - {name: release-redis, path: try-anything/releases/redis}
+      run: {path: ./try-anything/bin/make_manifest_and_save.sh}
+  - task: git-add
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: make-manifest}
+      run:
+        path: ./make-manifest/try-anything/bin/git-add-stage-changes.sh
+        args: ["[try-anything] Update manifest & trigger pipeline"]
+  - put: git-pipeline
+    params:
+      repository: git-add/make-manifest
+      rebase: true
+
+  - put: deployment-try-anything
+    params:
+      manifest: make-manifest/try-anything/manifests/manifest.yml
+      releases: [release-redis/*.tgz]
+      stemcells: [stemcell/*.tgz]
+  - task: bosh-run-errand-acceptance-tests
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+        - {name: make-manifest}
+      run:
+        path: bosh
+        args: [-t, {{bosh-try-anything-target}}, -u, {{bosh-try-anything-username}}, -p, {{bosh-try-anything-password}}, -d, make-manifest/try-anything/manifests/manifest.yml, run, errand, acceptance-tests]
+
+  - task: save-deployment-pipeline
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: release-version}
+      - {name: make-manifest, path: .}
+      - {name: release-redis}
+      - {name: stemcell}
+      run: {path: ./try-anything/bin/save_deployment_pipeline.sh}
+
+  - put: s3-candidate-assets
+    params: {from: save-deployment-pipeline/pipeline-assets-(.*).tgz}
+
+- name: update-try-anything
+  public: true
+  serial: true
+  serial_groups: [try-anything]
+  plan:
+  - aggregate:
+    - {get: pipeline, resource: git-pipeline, trigger: false}
+    - {get: try-anything-env-changes, trigger: true}
+
+  - task: make-manifest
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: pipeline, path: .}
+      run: {path: ./try-anything/bin/make_manifest_and_save.sh}
+  - task: git-add
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: make-manifest}
+      run:
+        path: ./make-manifest/try-anything/bin/git-add-stage-changes.sh
+        args: ["[try-anything] Update local manifest only"]
+  - put: git-pipeline
+    params:
+      repository: git-add/make-manifest
+      rebase: true
+
+  - put: deployment-try-anything
+    params:
+      manifest: make-manifest/try-anything/manifests/manifest.yml
+      releases: []
+      stemcells: []
+
+resources:
+- name: stemcell
+  type: bosh-io-stemcell
+  source:
+    name: {{bosh-stemcell-name}}
+    version: {{bosh-stemcell-version}}
+
+- name: release-redis
+  type: bosh-io-release
+  source: {repository: cloudfoundry-community/redis-boshrelease}
+
+- name: git-pipeline
+  type: git
+  source:
+    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    branch: {{pipeline-branch}}
+    private_key: {{github-private-key}}
+
+- name: try-anything-env-changes
+  type: git
+  source:
+    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    branch: {{pipeline-branch}}
+    private_key: {{github-private-key}}
+    paths: [try-anything/environment]
+
+- name: try-anything-template-changes
+  type: git
+  source:
+    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    branch: {{pipeline-branch}}
+    private_key: {{github-private-key}}
+    paths: [try-anything/templates]
+
+- name: deployment-try-anything
+  type: bosh-deployment
+  source:
+    target: {{bosh-try-anything-target}}
+    username: {{bosh-try-anything-username}}
+    password: {{bosh-try-anything-password}}
+    deployment: try-anything
+    ignore_ssl: true
+
+- name: release-version
+  type: semver
+  source:
+    bucket: {{aws-pipeline-bucket}}
+    key: release-version
+    initial_version: 0.1.0
+    access_key_id: {{aws-access-key-id}}
+    secret_access_key: {{aws-secret-access-key}}
+    region_name: us-east-1
+
+- name: s3-candidate-assets
+  type: s3
+  source:
+    access_key_id: {{aws-access-key-id}}
+    secret_access_key: {{aws-secret-access-key}}
+    region_name: {{aws-region-name}}
+    bucket:  {{aws-pipeline-bucket}}
+    private: true
+    regexp: pipeline-assets-(.*).tgz
