@@ -59,3 +59,16 @@ For this Redis deployment there will be the following templates:
 The purpose of `networking-dev1.yml` is to ensure that the `dev1` deployment uses unique networking address ranges from the other deployments.
 
 The purpose of `scaling-dev1.yml` is to document the size of the `dev1` Redis cluster.
+
+Building/updating the base Docker image for tasks
+-------------------------------------------------
+
+Each task within all job build plans uses the same base Docker image for all dependencies. Using the same Docker image is a convenience. This section explains how to re-build and push it to Docker Hub.
+
+All the resources used in the pipeline are shipped as independent Docker images and are outside the scope of this section.
+
+```
+./run-pipeline.sh redis-pipeline-image ci_image/pipeline.yml credentials.yml
+```
+
+This will ask your targeted Concourse to pull down this project repository, and build the `ci_image/Dockerfile`, and push it to a Docker image on Docker Hub.
