@@ -1,12 +1,4 @@
 ---
-groups:
-- name: release
-  jobs:
-  - deploy-try-anything
-- name: updates
-  jobs:
-  - update-try-anything
-
 jobs:
 - name: deploy-try-anything
   public: true
@@ -19,9 +11,6 @@ jobs:
     - {get: pipeline, resource: git-pipeline, trigger: false}
     - {get: try-anything-template-changes, trigger: true}
     - {get: release-version, trigger: false, params: {bump: patch}}
-  - put: release-version
-    params: {file: release-version/number}
-
   - task: make-manifest
     config:
       platform: linux
@@ -60,6 +49,9 @@ jobs:
         path: bosh
         args: [-t, {{bosh-try-anything-target}}, -u, {{bosh-try-anything-username}}, -p, {{bosh-try-anything-password}}, -d, make-manifest/try-anything/manifests/manifest.yml, run, errand, acceptance-tests]
 
+
+  - put: release-version
+    params: {file: release-version/number}
   - task: save-deployment-pipeline
     config:
       platform: linux

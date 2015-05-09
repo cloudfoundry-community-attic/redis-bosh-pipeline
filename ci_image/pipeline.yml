@@ -15,7 +15,7 @@ resources:
 - name: git-pipeline-docker-image
   type: git
   source:
-    uri: git@github.com:drnic/redis-bosh-pipeline.git
+    uri: {{pipeline-git-repo}}
     branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
     paths: [ci_image/*]
