@@ -1,0 +1,55 @@
+meta:
+  subnets: (( merge ))
+  test_slaves: 1
+
+update:
+  canaries: 1
+  max_in_flight: 50
+  canary_watch_time: 1000-100000
+  update_watch_time: 1000-100000
+
+jobs:
+  - name: redis_leader_z1
+    instances: 1
+    networks:
+      - name: redis1
+        static_ips: (( static_ips(0) ))
+    persistent_disk: 4096
+  - name: redis_z1
+    persistent_disk: 4096
+    networks:
+      - name: redis1
+    properties:
+      redis:
+        master: (( jobs.redis_leader_z1.networks.redis1.static_ips.[0] ))
+      network: redis1
+  - name: redis_test_slave_z1
+    persistent_disk: 4096
+    instances: 1
+    networks:
+      - name: redis1
+        static_ips: (( static_ips(1) ))
+    properties:
+      redis:
+        master: (( jobs.redis_leader_z1.networks.redis1.static_ips.[0] ))
+      network: redis1
+  - name: acceptance-tests
+    networks:
+      - name: redis1
+    properties:
+      redis:
+        master: (( jobs.redis_leader_z1.networks.redis1.static_ips.[0] ))
+        slave: (( jobs.redis_test_slave_z1.networks.redis1.static_ips.[0] ))
+
+compilation:
+  cloud_properties:
+    name: random
+
+resource_pools:
+  - name: small_z1
+    cloud_properties:
+      name: random
+
+networks:
+- name: redis1
+  subnets: (( meta.subnets ))

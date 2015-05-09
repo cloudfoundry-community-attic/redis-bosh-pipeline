@@ -1,0 +1,10 @@
+meta:
+  release_versions:
+    redis: (( merge ))
+  job_templates:
+    - name: redis
+      release: redis
+
+releases:
+  - name: redis
+    version: (( meta.release_versions.redis ))
