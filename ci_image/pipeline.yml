@@ -16,7 +16,7 @@ resources:
   type: git
   source:
     uri: git@github.com:drnic/redis-bosh-pipeline.git
-    branch: master
+    branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
     paths: [ci_image/*]
 
