@@ -402,6 +402,15 @@ jobs:
       manifest: make-manifest/production/manifests/manifest.yml
       releases: []
       stemcells: []
+  - task: bosh-run-errand-acceptance-tests
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+        - {name: make-manifest}
+      run:
+        path: bosh
+        args: [-t, {{bosh-production-target}}, -u, {{bosh-production-username}}, -p, {{bosh-production-password}}, -d, make-manifest/production/manifests/manifest.yml, run, errand, acceptance-tests]
 
 resources:
 - name: stemcell
