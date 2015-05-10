@@ -8,6 +8,36 @@ groups:
   - update-try-anything
 
 jobs:
+- name: package-packages
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - get: candidate-assets
+      resource: s3-candidate-assets
+      passed: [deploy-integration]
+      trigger: false
+    - {get: pipeline, resource: git-pipeline, trigger: false}
+  - task: unpack-assets
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: pipeline, path: .}
+      - {name: candidate-assets}
+      run:
+        path: ./staging/bin/unpack_assets.sh
+        args: ["candidate-assets/pipeline-assets-*.tgz", "staging"]
+  - task: bosh-export-compiled-packages
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+        - {name: unpack-assets, path: .}
+      run:
+        path: ./try-anything/bin/export_compiled_packages.sh
+        args: []
+
 - name: deploy-try-anything
   public: true
   serial: true
