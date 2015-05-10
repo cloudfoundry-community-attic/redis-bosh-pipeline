@@ -16,22 +16,26 @@ jobs:
   plan:
   - aggregate:
     - {get: pipeline, resource: git-pipeline, trigger: false}
+    - {get: stemcell, passed: [deploy-try-anything], trigger: true}
+    - {get: release-redis, passed: [deploy-try-anything], trigger: true}
     - {get: compiled-package-redis, passed: [export-compiled-packages], trigger: true}
-  - task: ls
-    config:
-      platform: linux
-      image: docker:///ubuntu#14.04
-      inputs:
-      - name: compiled-package-redis
-      run:
-        path: ls
-        args: ["-opR", "compiled-package-redis"]
+  # - task: ls
+  #   config:
+  #     platform: linux
+  #     image: docker:///ubuntu#14.04
+  #     inputs:
+  #     - name: compiled-package-redis
+  #     run:
+  #       path: ls
+  #       args: ["-opR", "compiled-package-redis"]
   - task: bosh-export-compiled-packages
     config:
       platform: linux
       image: {{docker-hub-task-image}}
       inputs:
       - {name: pipeline, path: .}
+      - {name: stemcell, path: try-anything/stemcell/}
+      - {name: release-redis, path: try-anything/releases/redis/}
       - {name: compiled-package-redis, path: try-anything/compiled_packages/}
       run:
         path: ./try-anything/bin/import_compiled_packages.sh
