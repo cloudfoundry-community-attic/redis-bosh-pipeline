@@ -24,6 +24,6 @@ download_dir="compiled_packages"
 mkdir ${download_dir}
 
 manifest=pipeline/try-anything/manifests/manifest.yml
-bosh -t ${bosh-target} -u ${bosh-username} -p ${bosh-password} -d ${manifest} \
+bosh -t ${bosh_target} -u ${bosh_username} -p ${bosh_password} -d ${manifest} \
   export compiled_packages ${release_name_version} ${stemcell_name_version} \
     ${download_dir}

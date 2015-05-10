@@ -38,6 +38,10 @@ jobs:
       run:
         path: ./try-anything/bin/export_compiled_packages.sh
         args: []
+      params:
+        bosh_target: {{bosh-try-anything-target}}
+        bosh_username: {{bosh-try-anything-username}}
+        bosh_password: {{bosh-try-anything-password}}
 
 - name: deploy-try-anything
   public: true
