@@ -1,9 +1,17 @@
 ---
+groups:
+- name: release
+  jobs:
+  - deploy-try-anything
+- name: updates
+  jobs:
+  - update-try-anything
+
 jobs:
 - name: deploy-try-anything
   public: true
   serial: true
-  # serial_groups: [try-anything]
+  serial_groups: [try-anything]
   plan:
   - aggregate:
     - {get: stemcell, trigger: true}
@@ -69,7 +77,7 @@ jobs:
 - name: update-try-anything
   public: true
   serial: true
-  # serial_groups: [try-anything]
+  serial_groups: [try-anything]
   plan:
   - aggregate:
     - {get: pipeline, resource: git-pipeline, trigger: false}
