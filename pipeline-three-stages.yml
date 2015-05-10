@@ -3,12 +3,12 @@ groups:
 - name: release
   jobs:
   - deploy-try-anything
-  - deploy-staging
+  - deploy-preprod
   - deploy-production
 - name: updates
   jobs:
   - update-try-anything
-  - update-staging
+  - update-preprod
   - update-production
 - name: packages
   jobs:
@@ -85,8 +85,8 @@ jobs:
       - {name: pipeline, path: .}
       - {name: candidate-assets}
       run:
-        path: ./staging/bin/unpack_assets.sh
-        args: ["candidate-assets/pipeline-assets-*.tgz", "staging"]
+        path: ./preprod/bin/unpack_assets.sh
+        args: ["candidate-assets/pipeline-assets-*.tgz", "preprod"]
   - task: bosh-export-compiled-packages
     config:
       platform: linux
@@ -152,7 +152,7 @@ jobs:
         - {name: make-manifest}
       run:
         path: bosh
-        args: [-t, {{bosh-target}}, -u, {{bosh-username}}, -p, {{bosh-password}}, -d, make-manifest/try-anything/manifests/manifest.yml, run, errand, acceptance-tests]
+        args: [-t, {{bosh-try-anything-target}}, -u, {{bosh-try-anything-username}}, -p, {{bosh-try-anything-password}}, -d, make-manifest/try-anything/manifests/manifest.yml, run, errand, acceptance-tests]
 
   - put: release-version
     params: {file: release-version/number}
@@ -206,10 +206,10 @@ jobs:
       releases: []
       stemcells: []
 
-- name: deploy-staging
+- name: deploy-preprod
   public: true
   serial: true
-  serial_groups: [staging]
+  serial_groups: [preprod]
   plan:
   - aggregate:
     - get: candidate-assets
@@ -226,15 +226,15 @@ jobs:
       - {name: pipeline, path: .}
       - {name: candidate-assets}
       run:
-        path: ./staging/bin/unpack_assets.sh
-        args: ["candidate-assets/pipeline-assets-*.tgz", "staging"]
+        path: ./preprod/bin/unpack_assets.sh
+        args: ["candidate-assets/pipeline-assets-*.tgz", "preprod"]
   - task: make-manifest
     config:
       platform: linux
       image: {{docker-hub-task-image}}
       inputs:
       - {name: unpack-assets, path: .}
-      run: {path: ./staging/bin/make_manifest_and_save.sh}
+      run: {path: ./preprod/bin/make_manifest_and_save.sh}
   - task: git-add
     config:
       platform: linux
@@ -242,27 +242,36 @@ jobs:
       inputs:
       - name: make-manifest
       run:
-        path: ./make-manifest/staging/bin/git-add-stage-changes.sh
-        args: ["[staging] Update manifest"]
+        path: ./make-manifest/preprod/bin/git-add-stage-changes.sh
+        args: ["[preprod] Update manifest"]
   - put: git-pipeline
     params:
       repository: git-add/make-manifest
       rebase: true
 
-  - put: deployment-staging
+  - put: deployment-preprod
     params:
-      manifest: make-manifest/staging/manifests/manifest.yml
+      manifest: make-manifest/preprod/manifests/manifest.yml
       releases: []
       stemcells: []
+  - task: bosh-run-errand-acceptance-tests
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+        - {name: make-manifest}
+      run:
+        path: bosh
+        args: [-t, {{bosh-preprod-target}}, -u, {{bosh-preprod-username}}, -p, {{bosh-preprod-password}}, -d, make-manifest/preprod/manifests/manifest.yml, run, errand, acceptance-tests]
 
-- name: update-staging
+- name: update-preprod
   public: true
   serial: true
-  serial_groups: [staging]
+  serial_groups: [preprod]
   plan:
   - aggregate:
     - {get: pipeline, resource: git-pipeline, trigger: false}
-    - {get: staging-env-changes, trigger: true}
+    - {get: preprod-env-changes, trigger: true}
 
   - task: make-manifest
     config:
@@ -270,7 +279,7 @@ jobs:
       image: {{docker-hub-task-image}}
       inputs:
       - {name: pipeline, path: .}
-      run: {path: ./staging/bin/make_manifest_and_save.sh}
+      run: {path: ./preprod/bin/make_manifest_and_save.sh}
   - task: git-add
     config:
       platform: linux
@@ -278,18 +287,26 @@ jobs:
       inputs:
       - {name: make-manifest}
       run:
-        path: ./make-manifest/staging/bin/git-add-stage-changes.sh
-        args: ["[staging] Update local manifest only"]
+        path: ./make-manifest/preprod/bin/git-add-stage-changes.sh
+        args: ["[preprod] Update local manifest only"]
   - put: git-pipeline
     params:
       repository: git-add/make-manifest
       rebase: true
-
-  - put: deployment-staging
+  - put: deployment-preprod
     params:
-      manifest: make-manifest/staging/manifests/manifest.yml
+      manifest: make-manifest/preprod/manifests/manifest.yml
       releases: []
       stemcells: []
+  - task: bosh-run-errand-acceptance-tests
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+        - {name: make-manifest}
+      run:
+        path: bosh
+        args: [-t, {{bosh-preprod-target}}, -u, {{bosh-preprod-username}}, -p, {{bosh-preprod-password}}, -d, make-manifest/preprod/manifests/manifest.yml, run, errand, acceptance-tests]
 
 - name: deploy-production
   public: true
@@ -299,11 +316,11 @@ jobs:
   - aggregate:
     - get: candidate-assets
       resource: s3-candidate-assets
-      passed: [deploy-staging]
+      passed: [deploy-preprod]
       trigger: true
     - {get: production-env-changes, trigger: true}
     - {get: pipeline, resource: git-pipeline, trigger: false}
-    - {get: release-version, passed: [deploy-staging], trigger: false}
+    - {get: release-version, passed: [deploy-preprod], trigger: false}
   - task: unpack-assets
     config:
       platform: linux
@@ -340,6 +357,15 @@ jobs:
       manifest: make-manifest/production/manifests/manifest.yml
       releases: []
       stemcells: []
+  - task: bosh-run-errand-acceptance-tests
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+        - {name: make-manifest}
+      run:
+        path: bosh
+        args: [-t, {{bosh-production-target}}, -u, {{bosh-production-username}}, -p, {{bosh-production-password}}, -d, make-manifest/production/manifests/manifest.yml, run, errand, acceptance-tests]
 
 - name: update-production
   public: true
@@ -411,14 +437,14 @@ resources:
     private_key: {{github-private-key}}
     paths: [try-anything/templates]
 
-# staging-env-changes should only trigger on environment-specific changes
-- name: staging-env-changes
+# preprod-env-changes should only trigger on environment-specific changes
+- name: preprod-env-changes
   type: git
   source:
     uri: {{pipeline-git-repo}}
     branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
-    paths: [staging/environment]
+    paths: [preprod/environment]
 
 # production-env-changes should only trigger on environment-specific changes
 - name: production-env-changes
@@ -432,28 +458,28 @@ resources:
 - name: deployment-try-anything
   type: bosh-deployment
   source:
-    target: {{bosh-target}}
-    username: {{bosh-username}}
-    password: {{bosh-password}}
-    deployment: try-anything
+    target: {{bosh-try-anything-target}}
+    username: {{bosh-try-anything-username}}
+    password: {{bosh-try-anything-password}}
+    deployment: redis-try-anything
     ignore_ssl: true
 
-- name: deployment-staging
+- name: deployment-preprod
   type: bosh-deployment
   source:
-    target: {{bosh-target}}
-    username: {{bosh-username}}
-    password: {{bosh-password}}
-    deployment: staging
+    target: {{bosh-preprod-target}}
+    username: {{bosh-preprod-username}}
+    password: {{bosh-preprod-password}}
+    deployment: redis-preprod
     ignore_ssl: true
 
 - name: deployment-production
   type: bosh-deployment
   source:
-    target: {{bosh-target}}
-    username: {{bosh-username}}
-    password: {{bosh-password}}
-    deployment: production
+    target: {{bosh-production-target}}
+    username: {{bosh-production-username}}
+    password: {{bosh-production-password}}
+    deployment: redis-prod
     ignore_ssl: true
 
 - name: release-version
