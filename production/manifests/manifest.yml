@@ -74,7 +74,7 @@ meta:
   stemcell:
     name: bosh-warden-boshlite-ubuntu-trusty-go_agent
     version: 2776
-name: production
+name: redis-prod
 networks:
 - name: redis1
   subnets:
