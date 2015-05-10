@@ -2,39 +2,129 @@
 groups:
 - name: release
   jobs:
-  - deploy-integration
+  - deploy-try-anything
   - deploy-staging
   - deploy-production
 - name: updates
   jobs:
-  - update-integration
+  - update-try-anything
   - update-staging
   - update-production
+- name: packages
+  jobs:
+  - export-compiled-packages
+  - import-compiled-packages-preprod
+  - import-compiled-packages-production
 
 jobs:
-- name: deploy-integration
+- name: import-compiled-packages-production
   public: true
   serial: true
-  serial_groups: [integration]
+  plan:
+  - aggregate:
+    - {get: pipeline, resource: git-pipeline, trigger: false}
+    - {get: stemcell, passed: [deploy-try-anything], trigger: true}
+    - {get: release-redis, passed: [deploy-try-anything], trigger: true}
+    - {get: compiled-package-redis, passed: [export-compiled-packages], trigger: true}
+  - task: bosh-export-compiled-packages
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: pipeline, path: .}
+      - {name: stemcell, path: try-anything/stemcell/}
+      - {name: release-redis, path: try-anything/releases/redis/}
+      - {name: compiled-package-redis, path: try-anything/compiled_packages/}
+      run:
+        path: ./try-anything/bin/import_compiled_packages.sh
+        args: []
+      params:
+        bosh_target: {{bosh-production-target}}
+        bosh_username: {{bosh-production-username}}
+        bosh_password: {{bosh-production-password}}
+- name: import-compiled-packages-preprod
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - {get: pipeline, resource: git-pipeline, trigger: false}
+    - {get: stemcell, passed: [deploy-try-anything], trigger: true}
+    - {get: release-redis, passed: [deploy-try-anything], trigger: true}
+    - {get: compiled-package-redis, passed: [export-compiled-packages], trigger: true}
+  - task: bosh-export-compiled-packages
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: pipeline, path: .}
+      - {name: stemcell, path: try-anything/stemcell/}
+      - {name: release-redis, path: try-anything/releases/redis/}
+      - {name: compiled-package-redis, path: try-anything/compiled_packages/}
+      run:
+        path: ./try-anything/bin/import_compiled_packages.sh
+        args: []
+      params:
+        bosh_target: {{bosh-preprod-target}}
+        bosh_username: {{bosh-preprod-username}}
+        bosh_password: {{bosh-preprod-password}}
+- name: export-compiled-packages
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - get: candidate-assets
+      resource: s3-candidate-assets
+      passed: [deploy-try-anything]
+      trigger: false
+    - {get: pipeline, resource: git-pipeline, trigger: false}
+  - task: unpack-assets
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: pipeline, path: .}
+      - {name: candidate-assets}
+      run:
+        path: ./staging/bin/unpack_assets.sh
+        args: ["candidate-assets/pipeline-assets-*.tgz", "staging"]
+  - task: bosh-export-compiled-packages
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+        - {name: unpack-assets, path: .}
+      run:
+        path: ./try-anything/bin/export_compiled_packages.sh
+        args: []
+      params:
+        bosh_target: {{bosh-try-anything-target}}
+        bosh_username: {{bosh-try-anything-username}}
+        bosh_password: {{bosh-try-anything-password}}
+  - put: compiled-package-redis
+    params:
+      from: try-anything/compiled_packages/redis-(.*)-bosh-warden-boshlite-ubuntu-trusty-go_agent-(.*).tgz
+      to: bosh-warden-boshlite-ubuntu-trusty-go_agent/redis/
+
+- name: deploy-try-anything
+  public: true
+  serial: true
+  serial_groups: [try-anything]
   plan:
   - aggregate:
     - {get: stemcell, trigger: true}
     - {get: release-redis, trigger: true}
     - {get: pipeline, resource: git-pipeline, trigger: false}
-    - {get: integration-template-changes, trigger: true}
+    - {get: try-anything-template-changes, trigger: true}
     - {get: release-version, trigger: false, params: {bump: patch}}
-  - put: release-version
-    params: {file: release-version/number}
-
   - task: make-manifest
     config:
       platform: linux
       image: {{docker-hub-task-image}}
       inputs:
       - {name: pipeline, path: .}
-      - {name: stemcell, path: integration/stemcell}
-      - {name: release-redis, path: integration/releases/redis}
-      run: {path: ./integration/bin/make_manifest_and_save.sh}
+      - {name: stemcell, path: try-anything/stemcell}
+      - {name: release-redis, path: try-anything/releases/redis}
+      run: {path: ./try-anything/bin/make_manifest_and_save.sh}
   - task: git-add
     config:
       platform: linux
@@ -42,16 +132,16 @@ jobs:
       inputs:
       - {name: make-manifest}
       run:
-        path: ./make-manifest/integration/bin/git-add-stage-changes.sh
-        args: ["[integration] Update manifest & trigger pipeline"]
+        path: ./make-manifest/try-anything/bin/git-add-stage-changes.sh
+        args: ["[try-anything] Update manifest & trigger pipeline"]
   - put: git-pipeline
     params:
       repository: git-add/make-manifest
       rebase: true
 
-  - put: deployment-integration
+  - put: deployment-try-anything
     params:
-      manifest: make-manifest/integration/manifests/manifest.yml
+      manifest: make-manifest/try-anything/manifests/manifest.yml
       releases: [release-redis/*.tgz]
       stemcells: [stemcell/*.tgz]
   - task: bosh-run-errand-acceptance-tests
@@ -62,8 +152,10 @@ jobs:
         - {name: make-manifest}
       run:
         path: bosh
-        args: [-t, {{bosh-target}}, -u, {{bosh-username}}, -p, {{bosh-password}}, -d, make-manifest/integration/manifests/manifest.yml, run, errand, acceptance-tests]
+        args: [-t, {{bosh-target}}, -u, {{bosh-username}}, -p, {{bosh-password}}, -d, make-manifest/try-anything/manifests/manifest.yml, run, errand, acceptance-tests]
 
+  - put: release-version
+    params: {file: release-version/number}
   - task: save-deployment-pipeline
     config:
       platform: linux
@@ -73,19 +165,19 @@ jobs:
       - {name: make-manifest, path: .}
       - {name: release-redis}
       - {name: stemcell}
-      run: {path: ./integration/bin/save_deployment_pipeline.sh}
+      run: {path: ./try-anything/bin/save_deployment_pipeline.sh}
 
   - put: s3-candidate-assets
     params: {from: save-deployment-pipeline/pipeline-assets-(.*).tgz}
 
-- name: update-integration
+- name: update-try-anything
   public: true
   serial: true
-  serial_groups: [integration]
+  serial_groups: [try-anything]
   plan:
   - aggregate:
     - {get: pipeline, resource: git-pipeline, trigger: false}
-    - {get: integration-env-changes, trigger: true}
+    - {get: try-anything-env-changes, trigger: true}
 
   - task: make-manifest
     config:
@@ -93,7 +185,7 @@ jobs:
       image: {{docker-hub-task-image}}
       inputs:
       - {name: pipeline, path: .}
-      run: {path: ./integration/bin/make_manifest_and_save.sh}
+      run: {path: ./try-anything/bin/make_manifest_and_save.sh}
   - task: git-add
     config:
       platform: linux
@@ -101,16 +193,16 @@ jobs:
       inputs:
       - {name: make-manifest}
       run:
-        path: ./make-manifest/integration/bin/git-add-stage-changes.sh
-        args: ["[integration] Update local manifest only"]
+        path: ./make-manifest/try-anything/bin/git-add-stage-changes.sh
+        args: ["[try-anything] Update local manifest only"]
   - put: git-pipeline
     params:
       repository: git-add/make-manifest
       rebase: true
 
-  - put: deployment-integration
+  - put: deployment-try-anything
     params:
-      manifest: make-manifest/integration/manifests/manifest.yml
+      manifest: make-manifest/try-anything/manifests/manifest.yml
       releases: []
       stemcells: []
 
@@ -122,10 +214,10 @@ jobs:
   - aggregate:
     - get: candidate-assets
       resource: s3-candidate-assets
-      passed: [deploy-integration]
+      passed: [deploy-try-anything]
       trigger: true
     - {get: pipeline, resource: git-pipeline, trigger: false}
-    - {get: release-version, passed: [deploy-integration], trigger: false}
+    - {get: release-version, passed: [deploy-try-anything], trigger: false}
   - task: unpack-assets
     config:
       platform: linux
@@ -303,21 +395,21 @@ resources:
     branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
 
-- name: integration-env-changes
+- name: try-anything-env-changes
   type: git
   source:
     uri: {{pipeline-git-repo}}
     branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
-    paths: [integration/environment]
+    paths: [try-anything/environment]
 
-- name: integration-template-changes
+- name: try-anything-template-changes
   type: git
   source:
     uri: {{pipeline-git-repo}}
     branch: {{pipeline-branch}}
     private_key: {{github-private-key}}
-    paths: [integration/templates]
+    paths: [try-anything/templates]
 
 # staging-env-changes should only trigger on environment-specific changes
 - name: staging-env-changes
@@ -337,13 +429,13 @@ resources:
     private_key: {{github-private-key}}
     paths: [production/environment]
 
-- name: deployment-integration
+- name: deployment-try-anything
   type: bosh-deployment
   source:
     target: {{bosh-target}}
     username: {{bosh-username}}
     password: {{bosh-password}}
-    deployment: integration
+    deployment: try-anything
     ignore_ssl: true
 
 - name: deployment-staging
