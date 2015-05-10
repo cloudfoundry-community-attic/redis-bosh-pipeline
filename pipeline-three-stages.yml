@@ -54,31 +54,6 @@ jobs:
     params:
       from: try-anything/compiled_packages/redis-(.*)-bosh-warden-boshlite-ubuntu-trusty-go_agent-(.*).tgz
       to: bosh-warden-boshlite-ubuntu-trusty-go_agent/redis/
-- name: import-compiled-packages-production
-  public: true
-  serial: true
-  plan:
-  - aggregate:
-    - {get: pipeline, resource: git-pipeline, trigger: false}
-    - {get: stemcell, passed: [deploy-try-anything], trigger: true}
-    - {get: release-redis, passed: [deploy-try-anything], trigger: true}
-    - {get: compiled-package-redis, passed: [export-compiled-packages], trigger: true}
-  - task: bosh-export-compiled-packages
-    config:
-      platform: linux
-      image: {{docker-hub-task-image}}
-      inputs:
-      - {name: pipeline, path: .}
-      - {name: stemcell, path: try-anything/stemcell/}
-      - {name: release-redis, path: try-anything/releases/redis/}
-      - {name: compiled-package-redis, path: try-anything/compiled_packages/}
-      run:
-        path: ./try-anything/bin/import_compiled_packages.sh
-        args: []
-      params:
-        bosh_target: {{bosh-production-target}}
-        bosh_username: {{bosh-production-username}}
-        bosh_password: {{bosh-production-password}}
 - name: import-compiled-packages-preprod
   public: true
   serial: true
@@ -104,6 +79,31 @@ jobs:
         bosh_target: {{bosh-preprod-target}}
         bosh_username: {{bosh-preprod-username}}
         bosh_password: {{bosh-preprod-password}}
+- name: import-compiled-packages-production
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - {get: pipeline, resource: git-pipeline, trigger: false}
+    - {get: stemcell, passed: [deploy-try-anything], trigger: true}
+    - {get: release-redis, passed: [deploy-try-anything], trigger: true}
+    - {get: compiled-package-redis, passed: [export-compiled-packages], trigger: true}
+  - task: bosh-export-compiled-packages
+    config:
+      platform: linux
+      image: {{docker-hub-task-image}}
+      inputs:
+      - {name: pipeline, path: .}
+      - {name: stemcell, path: try-anything/stemcell/}
+      - {name: release-redis, path: try-anything/releases/redis/}
+      - {name: compiled-package-redis, path: try-anything/compiled_packages/}
+      run:
+        path: ./try-anything/bin/import_compiled_packages.sh
+        args: []
+      params:
+        bosh_target: {{bosh-production-target}}
+        bosh_username: {{bosh-production-username}}
+        bosh_password: {{bosh-production-password}}
 
 - name: deploy-try-anything
   public: true
