@@ -25,7 +25,7 @@ jobs:
     - get: candidate-assets
       resource: s3-candidate-assets
       passed: [deploy-try-anything]
-      trigger: false
+      trigger: true
     - {get: pipeline, resource: git-pipeline, trigger: false}
   - task: unpack-assets
     config:
@@ -218,6 +218,7 @@ jobs:
       trigger: true
     - {get: pipeline, resource: git-pipeline, trigger: false}
     - {get: release-version, passed: [deploy-try-anything], trigger: false}
+    - {get: compiled-package-redis, passed: [import-compiled-packages-preprod], trigger: true}
   - task: unpack-assets
     config:
       platform: linux
@@ -321,6 +322,7 @@ jobs:
     - {get: production-env-changes, trigger: true}
     - {get: pipeline, resource: git-pipeline, trigger: false}
     - {get: release-version, passed: [deploy-preprod], trigger: false}
+    - {get: compiled-package-redis, passed: [import-compiled-packages-production], trigger: true}
   - task: unpack-assets
     config:
       platform: linux
@@ -510,3 +512,13 @@ resources:
     bucket:  {{aws-pipeline-bucket}}
     private: true
     regexp: pipeline-assets-(.*).tgz
+
+- name: compiled-package-redis
+  type: s3
+  source:
+    access_key_id: {{aws-access-key-id}}
+    secret_access_key: {{aws-secret-access-key}}
+    region_name: {{aws-region-name}}
+    bucket:  {{aws-compiled-packages-bucket}}
+    private: false
+    regexp: try-anything/compiled_packages/redis-(.*)-bosh-warden-boshlite-ubuntu-trusty-go_agent-(.*).tgz
