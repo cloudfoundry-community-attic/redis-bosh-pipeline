@@ -17,6 +17,15 @@ jobs:
   - aggregate:
     - {get: pipeline, resource: git-pipeline, trigger: false}
     - {get: compiled-package-redis, passed: [export-compiled-packages], trigger: true}
+  - task: ls
+    config:
+      platform: linux
+      image: docker:///ubuntu#14.04
+      inputs:
+      - name: compiled-package-redis
+      run:
+        path: ls
+        args: ["-opR", "compiled-package-redis"]
   - task: bosh-export-compiled-packages
     config:
       platform: linux
