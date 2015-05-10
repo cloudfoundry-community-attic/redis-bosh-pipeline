@@ -142,7 +142,7 @@ resources:
     target: {{bosh-try-anything-target}}
     username: {{bosh-try-anything-username}}
     password: {{bosh-try-anything-password}}
-    deployment: try-anything
+    deployment: redis-try-anything
     ignore_ssl: true
 
 - name: release-version
