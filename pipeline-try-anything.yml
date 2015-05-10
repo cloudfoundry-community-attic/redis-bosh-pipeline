@@ -2,6 +2,7 @@
 groups:
 - name: release
   jobs:
+  - package-packages
   - deploy-try-anything
 - name: updates
   jobs:
@@ -15,7 +16,7 @@ jobs:
   - aggregate:
     - get: candidate-assets
       resource: s3-candidate-assets
-      passed: [deploy-integration]
+      passed: [deploy-try-anything]
       trigger: false
     - {get: pipeline, resource: git-pipeline, trigger: false}
   - task: unpack-assets
