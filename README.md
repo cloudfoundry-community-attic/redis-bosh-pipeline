@@ -3,9 +3,9 @@ Redis BOSH deployment pipeline
 
 NOTE: this readme was written first, then the pipeline was developed and I haven't yet updated the README to reflect what I've actually implemented so far.
 
-But here's a picture:
+But here's a picture of the basic pipeline to deploy Redis three times in succession:
 
-![pipeline](http://cl.ly/image/040n2c0M180r/pipeline_changes_vs_environment_changes.png)
+![pipeline](http://cl.ly/image/000Z2h041U3g/pipeline.png)
 
 This repository is an example of a corporate pipeline for a BOSH deployment through to production.
 
