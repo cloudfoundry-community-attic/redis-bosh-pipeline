@@ -42,6 +42,10 @@ jobs:
         bosh_target: {{bosh-try-anything-target}}
         bosh_username: {{bosh-try-anything-username}}
         bosh_password: {{bosh-try-anything-password}}
+  - put: compiled-package-redis
+    params:
+      from: try-anything/compiled_packages/redis-(.*)-bosh-warden-boshlite-ubuntu-trusty-go_agent-(.*).tgz
+      to: bosh-warden-boshlite-ubuntu-trusty-go_agent/redis/
 
 - name: deploy-try-anything
   public: true
@@ -207,3 +211,13 @@ resources:
     bucket:  {{aws-pipeline-bucket}}
     private: true
     regexp: pipeline-assets-(.*).tgz
+
+- name: compiled-package-redis
+  type: s3
+  source:
+    access_key_id: {{aws-access-key-id}}
+    secret_access_key: {{aws-secret-access-key}}
+    region_name: {{aws-region-name}}
+    bucket:  {{aws-compiled-packages-bucket}}
+    private: false
+    regexp: try-anything/compiled_packages/redis-(.*)-bosh-warden-boshlite-ubuntu-trusty-go_agent-(.*).tgz
