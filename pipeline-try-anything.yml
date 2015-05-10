@@ -2,14 +2,14 @@
 groups:
 - name: release
   jobs:
-  - package-packages
+  - export-compiled-packages
   - deploy-try-anything
 - name: updates
   jobs:
   - update-try-anything
 
 jobs:
-- name: package-packages
+- name: export-compiled-packages
   public: true
   serial: true
   plan:
