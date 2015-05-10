@@ -21,6 +21,7 @@ release_name_version="redis/${REDIS_VERSION}"
 stemcell_name_version="bosh-warden-boshlite-ubuntu-trusty-go_agent/${STEMCELL_VERSION}"
 
 download_dir="compiled_packages"
+mkdir ${download_dir}
 
 manifest=pipeline/try-anything/manifests/manifest.yml
 bosh -t ${bosh-target} -u ${bosh-username} -p ${bosh-password} -d ${manifest} \
