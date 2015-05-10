@@ -63,7 +63,6 @@ jobs:
         bosh_target: {{bosh-preprod-target}}
         bosh_username: {{bosh-preprod-username}}
         bosh_password: {{bosh-preprod-password}}
-
 - name: export-compiled-packages
   public: true
   serial: true
@@ -151,7 +150,6 @@ jobs:
         path: bosh
         args: [-t, {{bosh-try-anything-target}}, -u, {{bosh-try-anything-username}}, -p, {{bosh-try-anything-password}}, -d, make-manifest/try-anything/manifests/manifest.yml, run, errand, acceptance-tests]
 
-
   - put: release-version
     params: {file: release-version/number}
   - task: save-deployment-pipeline
@@ -164,7 +162,6 @@ jobs:
       - {name: release-redis}
       - {name: stemcell}
       run: {path: ./try-anything/bin/save_deployment_pipeline.sh}
-
   - put: s3-candidate-assets
     params: {from: save-deployment-pipeline/pipeline-assets-(.*).tgz}
 
