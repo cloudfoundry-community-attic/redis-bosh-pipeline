@@ -23,7 +23,7 @@ jobs:
       image: {{docker-hub-task-image}}
       inputs:
       - {name: pipeline, path: .}
-      - {name: compiled-package-redis}
+      - {name: compiled-package-redis, path: try-anything/compiled_packages/}
       run:
         path: ./try-anything/bin/import_compiled_packages.sh
         args: []
