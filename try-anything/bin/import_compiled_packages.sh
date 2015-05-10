@@ -2,7 +2,6 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd $DIR/..
-set -e
 
 bosh_() {
   bosh -t ${bosh_target} -u ${bosh_username} -p ${bosh_password} $@
@@ -13,7 +12,6 @@ bosh_ upload stemcell ${stemcell}
 
 release=$(ls releases/redis/*.tgz)
 bosh_ upload release ${release}
-
 
 compiled_package=$(ls compiled_packages/*.tgz)
 bosh_ import compiled_packages ${compiled_package}
