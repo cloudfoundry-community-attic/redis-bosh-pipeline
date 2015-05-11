@@ -319,7 +319,6 @@ jobs:
       resource: s3-candidate-assets
       passed: [deploy-preprod]
       trigger: true
-    - {get: production-env-changes, trigger: true}
     - {get: pipeline, resource: git-pipeline, trigger: false}
     - {get: release-version, passed: [deploy-preprod], trigger: false}
     - {get: compiled-package-redis, passed: [import-compiled-packages-production], trigger: true}
