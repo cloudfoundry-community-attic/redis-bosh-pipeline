@@ -5,7 +5,7 @@ NOTE: this readme was written first, then the pipeline was developed and I haven
 
 But here's a picture of the basic pipeline to deploy Redis three times in succession:
 
-![pipeline](http://cl.ly/image/000Z2h041U3g/pipeline.png)
+![pipeline](http://cl.ly/image/3D3c1j3h2Z1F/redis_pipeline.png)
 
 This repository is an example of a corporate pipeline for a BOSH deployment through to production.
 
